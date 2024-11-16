@@ -35,8 +35,6 @@ class ReviewSerializer(serializers.ModelSerializer):
         
         
         
-
-
 class SimilarPhoneSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
 

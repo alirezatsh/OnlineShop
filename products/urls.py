@@ -14,3 +14,6 @@ urlpatterns = [
     path('reviews/', include('ckeditor_uploader.urls')),  
 
 ]
+
+
+

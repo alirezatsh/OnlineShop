@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'products.apps.ProductsConfig',
     'ckeditor',
     'ckeditor_uploader',
+    'accounts.apps.AccountsConfig',
 
 ]
 

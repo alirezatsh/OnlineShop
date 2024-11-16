@@ -3,7 +3,7 @@ from .models import Phone, PhoneImage , Review
 
 class PhoneImageInline(admin.TabularInline):
     model = PhoneImage
-    extra = 1  
+    extra = 1
 
 class PhoneAdmin(admin.ModelAdmin):
     inlines = [PhoneImageInline]
