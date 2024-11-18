@@ -3,8 +3,6 @@ from ckeditor_uploader.fields import RichTextUploadingField
 from decimal import Decimal
 
 
-
-
 class Review(models.Model):
     title = models.CharField(max_length=30)
     description = RichTextUploadingField()
@@ -35,7 +33,7 @@ class Phone(models.Model):
     ScreenToBody = models.CharField(max_length=50, blank=True, null=True)
     ScreenRatio = models.CharField(max_length=50, blank=True, null=True)
     PixelDensity = models.CharField(max_length=50, blank=True, null=True)
-    RefreshRate = models.FloatField(blank=True, null=True)
+    RefreshRate = models.CharField(max_length=100 , blank=True, null=True)
     ScreenSaver = models.CharField(max_length=50, blank=True, null=True)
     WideCamera = models.CharField(max_length=100, blank=True, null=True)
     UltraWideCamera = models.CharField(max_length=100, blank=True, null=True)
@@ -69,7 +67,7 @@ class Phone(models.Model):
     WirelessCharging = models.BooleanField(default=False)
     ReverseCharging = models.BooleanField(default=False)
     ProductID = models.CharField(max_length=150, blank=True, null=True)
-    ChargingPort = models.FloatField(max_length=50, blank=True, null=True)
+    ChargingPort = models.CharField(max_length=50, blank=True, null=True)
     price = models.PositiveIntegerField(default=1) 
     discount = models.PositiveIntegerField(default=0)  
     FinalPrice = models.PositiveIntegerField(editable=False, null=True)
