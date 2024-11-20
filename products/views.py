@@ -1,8 +1,10 @@
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Phone, PhoneImage, Review
-from .serializers import PhoneSerializer, PhoneImageSerializer, ReviewSerializer, SimilarPhoneSerializer
+from .models import Phone, PhoneImage, Review , Tablet , TabletImage
+from .serializers import (PhoneSerializer, PhoneImageSerializer, ReviewSerializer,
+                          SimilarPhoneSerializer , TabletImageSerializer ,
+                          TabletSerializer , SimilarTabletSerializer)
 from django.db.models import Q
 
 class PhoneViewSet(viewsets.ModelViewSet):
@@ -27,6 +29,30 @@ class PhoneViewSet(viewsets.ModelViewSet):
 class PhoneImageViewSet(viewsets.ModelViewSet):
     queryset = PhoneImage.objects.all()
     serializer_class = PhoneImageSerializer
+    
+    
+class TabletViewSet(viewsets.ModelViewSet):
+    queryset = Tablet.objects.all()
+    serializer_class = TabletSerializer
+
+    @action(detail=True, methods=['get'])
+    def similar(self, request, pk=None):
+        try:
+            tablet = self.get_object()
+            similar_tablets = Tablet.objects.filter(
+                Q(name__icontains=tablet.name.split()[0])
+            ).exclude(id=tablet.id)[:5]
+
+            serializer = SimilarTabletSerializer(similar_tablets, many=True)
+            return Response(serializer.data)
+        except tablet.DoesNotExist:
+            return Response({"error": "tablet not found"}, status=404)
+
+
+
+class TabletImageViewSet(viewsets.ModelViewSet):
+    queryset = TabletImage.objects.all()
+    serializer_class = TabletImageSerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
