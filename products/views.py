@@ -1,10 +1,12 @@
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Phone, PhoneImage, Review , Tablet , TabletImage , SmartWatch , SmartWatchImage
+from .models import Phone, PhoneImage, Review , Tablet , TabletImage , SmartWatch , SmartWatchImage , AirPods , AirPodImage
 from .serializers import (PhoneSerializer, PhoneImageSerializer, ReviewSerializer,
                           SimilarPhoneSerializer , TabletImageSerializer ,
-                          TabletSerializer , SimilarTabletSerializer , SmartWatchImageSerializer , SmartWatchSerializer , SimilarSmartWatchSerializer)
+                          TabletSerializer , SimilarTabletSerializer , SmartWatchImageSerializer 
+                          , SmartWatchSerializer , SimilarSmartWatchSerializer , 
+                          AirPodSerializer , AirPodImageSerializer , SimilarAirPodSerializer)
 from django.db.models import Q
 
 class PhoneViewSet(viewsets.ModelViewSet):
@@ -82,6 +84,38 @@ class SmartwatchViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         except SmartWatch.DoesNotExist:
             return Response({"error": "Smartwatch not found"}, status=404)
+        
+
+
+class AirPodViewSet(viewsets.ModelViewSet):
+    queryset = AirPods.objects.all()
+    serializer_class = AirPodSerializer
+    
+    @action(detail=False, methods=['get'], url_path='fake')
+    def fake_airpods(self, request):
+        queryset = self.get_queryset().filter(IsFake=True)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], url_path='original')
+    def original_airpods(self, request):
+        queryset = self.get_queryset().filter(IsFake=False)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def similar(self, request, pk=None):
+        try:
+            airpod = self.get_object()
+            similar_products = AirPods.objects.filter(
+                Q(name__icontains=airpod.name.split()[0])
+            ).exclude(id=airpod.id)[:5]
+            serializer = SimilarAirPodSerializer(similar_products, many=True)
+            return Response(serializer.data)
+        except AirPods.DoesNotExist:
+            return Response({"error": "AirPod not found"}, status=404)
+        
+
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Phone, PhoneImage , Review , Tablet , TabletImage , SmartWatchImage , SmartWatch
+from .models import Phone, PhoneImage , Review , Tablet , TabletImage , SmartWatchImage , SmartWatch , AirPods , AirPodImage
 from django.db.models import Q
 
 
@@ -120,8 +120,47 @@ class SimilarSmartWatchSerializer(serializers.ModelSerializer):
     def get_image(self, obj):
         first_image = obj.images.first()
         return first_image.image.url if first_image else None
+    
+    
+
+class AirPodImageSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField()
+    
+    class Meta:
+        model = AirPodImage
+        fields = ['image']
+        
+        
+class AirPodSerializer(serializers.ModelSerializer):
+    images = serializers.SerializerMethodField()
+    similar_airpods = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = AirPods
+        fields = '__all__'
+        
+    def get_images(self , obj):
+        return [ image.image.url for image in obj.images.all()]
+    
+    def get_similar_airpods(self , obj):
+        similar_airpods = AirPods.objects.filter(
+            Q(name__icontains=obj.name.split()[0])  
+        ).exclude(id=obj.id)[:5]
+        return SimilarAirPodSerializer(similar_airpods, many=True).data
+    
+    
+
+class SimilarAirPodSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = AirPods
+        fields = ['name' , 'image' , 'price']
 
 
+    def get_image(self, obj):
+        first_image = obj.images.first()
+        return first_image.image.url if first_image else None
     
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:

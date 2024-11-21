@@ -243,3 +243,73 @@ class SmartWatchImage(models.Model):
 
     def __str__(self):
         return f"Image of {self.smartwatch.name}"
+    
+    
+class AirPods(BaseProduct):
+    name = models.CharField(max_length=50 , blank=True , null=True)
+    color = models.CharField(max_length=50, blank=True, null=True)
+    IsFake = models.BooleanField(default=False)
+    resistance = models.CharField(max_length=100, blank=True, null=True)
+    connectionType = models.CharField(max_length=50 , blank=True , null=True)
+    bluetooth = models.CharField(max_length=100, blank=True, null=True)
+    ANC = models.BooleanField(default=False)
+    BodyMaterial = models.CharField(max_length=50 , blank=True , null=True)
+    LEDIndicator = models.BooleanField(default=False)
+    PlaceHeadphones = models.CharField(max_length=50 , blank=True , null=True)
+    type = models.CharField(max_length=50 , blank=True , null=True)
+    InterfaceType = models.CharField(max_length=50 , blank=True , null=True)
+    microphone = models.BooleanField(default=False)
+    MicrophoneInfo = models.CharField(max_length=300 , blank=True , null=True)
+    VoiceAssistant = models.BooleanField(default=False)
+    ResponseFrequency = models.CharField(max_length=50 , blank=True , null=True)
+    DriverDiameter = models.CharField(max_length=50 , blank=True , null=True)
+    PerformanceRange = models.CharField(max_length=50 , blank=True , null=True)
+    OtherFeatures = models.CharField(max_length=500, blank=True, null=True)
+    BatteryCapacity = models.CharField(max_length=100, blank=True, null=True)
+    BatteryAgeMusic = models.CharField(max_length=300 , blank=True , null=True)
+    BatteryAgeStandBy = models.CharField(max_length=300 , blank=True , null=True)
+    BatteryAgeConversation = models.CharField(max_length=300 , blank=True , null=True)
+    ChargingTime = models.CharField(max_length=100 , blank=True , null=True)
+    DimensionsWeights = models.CharField(max_length=100, blank=True, null=True)
+    buttons = models.CharField(max_length=300 , blank=True , null=True)
+    VoiceControl = models.BooleanField(default=False)
+    AcousticType = models.CharField(max_length=100 , blank=True , null=True)
+    SpecialFeatures = models.CharField(max_length=300 , blank=True , null=True)
+    battery = models.CharField(max_length=50, blank=True, null=True)
+    BatteryEfficiency = models.CharField(max_length=100 , blank=True , null=True)
+    ProductID = models.CharField(max_length=150, blank=True, null=True)
+    compatibility = models.CharField(max_length=50 , blank=True , null=True)
+    MultipleConnection = models.BooleanField(default=False) 
+    jack = models.BooleanField(default=False)
+    Impedance = models.CharField(max_length=50 , blank=True , null=True)
+    MagnetType = models.CharField(max_length=50 , blank=True , null=True)
+    IncludedItems = models.CharField(max_length=100, blank=True, null=True)
+    USBPort = models.CharField(max_length=50, blank=True, null=True)
+    sensitivity = models.CharField(max_length=50 , blank=True, null=True)
+    
+    
+    def __str__(self):
+       return f'{self.id} - {self.name}'
+   
+
+
+
+class AirPodImage(models.Model):
+    airpod = models.ForeignKey(AirPods, related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='airpod_images/')
+
+    def __str__(self):
+        return f"Image of {self.airpod.name}"
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
