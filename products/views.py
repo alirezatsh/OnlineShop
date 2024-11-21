@@ -1,10 +1,10 @@
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Phone, PhoneImage, Review , Tablet , TabletImage
+from .models import Phone, PhoneImage, Review , Tablet , TabletImage , SmartWatch , SmartWatchImage
 from .serializers import (PhoneSerializer, PhoneImageSerializer, ReviewSerializer,
                           SimilarPhoneSerializer , TabletImageSerializer ,
-                          TabletSerializer , SimilarTabletSerializer)
+                          TabletSerializer , SimilarTabletSerializer , SmartWatchImageSerializer , SmartWatchSerializer , SimilarSmartWatchSerializer)
 from django.db.models import Q
 
 class PhoneViewSet(viewsets.ModelViewSet):
@@ -53,6 +53,35 @@ class TabletViewSet(viewsets.ModelViewSet):
 class TabletImageViewSet(viewsets.ModelViewSet):
     queryset = TabletImage.objects.all()
     serializer_class = TabletImageSerializer
+    
+    
+class SmartwatchViewSet(viewsets.ModelViewSet):
+    queryset = SmartWatch.objects.all()
+    serializer_class = SmartWatchSerializer
+
+    @action(detail=False, methods=['get'], url_path='fake')
+    def fake_smartwatches(self, request):
+        queryset = self.get_queryset().filter(IsFake=True)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], url_path='original')
+    def original_smartwatches(self, request):
+        queryset = self.get_queryset().filter(IsFake=False)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def similar(self, request, pk=None):
+        try:
+            smartwatch = self.get_object()
+            similar_products = SmartWatch.objects.filter(
+                Q(name__icontains=smartwatch.name.split()[0])
+            ).exclude(id=smartwatch.id)[:5]
+            serializer = SimilarSmartWatchSerializer(similar_products, many=True)
+            return Response(serializer.data)
+        except SmartWatch.DoesNotExist:
+            return Response({"error": "Smartwatch not found"}, status=404)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

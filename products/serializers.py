@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Phone, PhoneImage , Review , Tablet , TabletImage
+from .models import Phone, PhoneImage , Review , Tablet , TabletImage , SmartWatchImage , SmartWatch
 from django.db.models import Q
 
 
@@ -73,6 +73,48 @@ class SimilarTabletSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tablet
+        fields = ['name', 'image', 'price' ]
+
+    def get_image(self, obj):
+        first_image = obj.images.first()
+        return first_image.image.url if first_image else None
+
+
+
+
+
+class SmartWatchImageSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField()
+
+    class Meta:
+        model = SmartWatchImage
+        fields = ['image']
+        
+        
+class SmartWatchSerializer(serializers.ModelSerializer):
+    images = serializers.SerializerMethodField()
+    similar_smartwatch = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SmartWatch
+        fields = '__all__'
+
+    def get_images(self, obj):
+        return [image.image.url for image in obj.images.all()]
+    
+    def get_similar_smartwatch(self, obj):
+        similar_smartwatch = SmartWatch.objects.filter(
+            Q(name__icontains=obj.name.split()[0])  
+        ).exclude(id=obj.id)[:5]
+        return SimilarSmartWatchSerializer(similar_smartwatch, many=True).data
+    
+    
+
+class SimilarSmartWatchSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SmartWatch
         fields = ['name', 'image', 'price' ]
 
     def get_image(self, obj):

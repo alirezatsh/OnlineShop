@@ -182,10 +182,64 @@ class TabletImage(models.Model):
 
 
 
+class SmartWatch(BaseProduct):
+    name = models.CharField(max_length=50 , blank=True , null=True)
+    color = models.CharField(max_length=50, blank=True, null=True)
+    IsFake = models.BooleanField(default=False)
+    compatibility = models.CharField(max_length=50 , blank=True , null=True)
+    BatteryCapacity = models.CharField(max_length=50 , blank=True , null=True)
+    FarsiSupport = models.BooleanField(default=False)
+    conversation = models.BooleanField(default=False)
+    BatteryEfficiency = models.CharField(max_length=100 , blank=True , null=True)
+    UserGroup = models.CharField(max_length=50 , blank=True , null=True)
+    DimensionsWeights = models.CharField(max_length=100, blank=True, null=True)
+    BodyMaterial = models.CharField(max_length=50 , blank=True , null=True)
+    Sensors = models.CharField(max_length=150, blank=True, null=True)
+    resistance = models.CharField(max_length=100, blank=True, null=True)
+    ReplaceStrap = models.BooleanField(default=False)
+    StrapMaterial = models.CharField(max_length=50 , blank=True , null=True)
+    WatchFace = models.BooleanField(default=False)
+    speaker = models.BooleanField(default=False)
+    microphone = models.BooleanField(default=False)
+    StrapLock = models.CharField(max_length=50 , blank=True , null=True)
+    ScreenType = models.CharField(max_length=50 , blank=True , null=True)
+    resolution = models.CharField(max_length=50, blank=True, null=True)
+    ImageResolution = models.CharField(max_length=50 , blank=True , null=True)
+    ScreenShape = models.CharField(max_length=50 , blank=True , null=True)
+    ScreenSize = models.CharField(max_length=50 , blank=True , null=True)
+    GPS = models.BooleanField(default=False)
+    bluetooth = models.CharField(max_length=100, blank=True, null=True)
+    BatteryCapacity = models.CharField(max_length=100, blank=True, null=True)
+    ChargingTime = models.CharField(max_length=50 , blank=True , null=True)
+    OtherFeatures = models.CharField(max_length=500, blank=True, null=True)
+    OS = models.CharField(max_length=100, blank=True, null=True)
+    NFC = models.BooleanField(default=False)
+    WiFiNetwork = models.CharField(max_length=100, blank=True, null=True)
+    SIMCardSupport = models.BooleanField(default=False)
+    ChargingSource = models.CharField(max_length=50 , blank=True , null=True)
+    vibration = models.BooleanField(default=False)
+    ProductID = models.CharField(max_length=150, blank=True, null=True)
+    cpu = models.CharField(max_length=100, blank=True, null=True)
+    InnerMemory = models.CharField(max_length=50, blank=True, null=True)
+    RAM = models.CharField(max_length=50, blank=True, null=True)
+    WatchStyle = models.CharField(max_length=50 , blank=True , null=True)
+    LightOfScreen = models.CharField(max_length=100, blank=True, null=True)
+    ScreenOn = models.BooleanField(default=False)
+    SuitableFor = models.CharField(max_length=50 , blank=True , null=True)
+    TypeOfMemoryCard = models.CharField(max_length=50 , blank=True , null=True)
+    InstallSoftware = models.BooleanField(default=False)
+    IncludedItems = models.CharField(max_length=100, blank=True, null=True)
 
 
-    
+    def __str__(self):
+       return f'{self.id} - {self.name}'
+   
 
-    
 
 
+class SmartWatchImage(models.Model):
+    smartwatch = models.ForeignKey(SmartWatch, related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='smartwatch_images/')
+
+    def __str__(self):
+        return f"Image of {self.smartwatch.name}"
