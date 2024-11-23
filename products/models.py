@@ -5,12 +5,22 @@ from decimal import Decimal
 class Review(models.Model):
     title = models.CharField(max_length=30)
     description = RichTextUploadingField()
+    
+    def  __str__(self):
+        return self.title
+    
+class Brand(models.Model):
+    name = models.CharField(max_length=100 , blank=True , null=True)
+    
+    def __str__(self):
+        return self.name
 
 class BaseProduct(models.Model):
     price = models.PositiveIntegerField(default=0) 
     discount = models.PositiveIntegerField(default=0)  
     FinalPrice = models.PositiveIntegerField(editable=False, null=True)
     review = models.ForeignKey(Review , on_delete=models.CASCADE , blank=True , null=True)
+    brand = models.ForeignKey(Brand , on_delete=models.CASCADE , blank=True , null=True)
     class Meta:
         abstract = True
 

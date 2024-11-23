@@ -1,12 +1,14 @@
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Phone, PhoneImage, Review , Tablet , TabletImage , SmartWatch , SmartWatchImage , AirPods , AirPodImage
+from .models import (Phone, PhoneImage, Review , Tablet , TabletImage ,
+                     SmartWatch , SmartWatchImage , AirPods , AirPodImage , Brand)
+
 from .serializers import (PhoneSerializer, PhoneImageSerializer, ReviewSerializer,
                           SimilarPhoneSerializer , TabletImageSerializer ,
                           TabletSerializer , SimilarTabletSerializer , SmartWatchImageSerializer 
                           , SmartWatchSerializer , SimilarSmartWatchSerializer , 
-                          AirPodSerializer , AirPodImageSerializer , SimilarAirPodSerializer)
+                          AirPodSerializer , AirPodImageSerializer , SimilarAirPodSerializer , BrandSerializer)
 from django.db.models import Q
 
 class PhoneViewSet(viewsets.ModelViewSet):
@@ -117,10 +119,14 @@ class AirPodViewSet(viewsets.ModelViewSet):
         
 
 
-
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
+    
+    
+class BrandViewSet(viewsets.ModelViewSet):
+    queryset = Brand.objects.all()
+    serializer_class = BrandSerializer
 
 
 
