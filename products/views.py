@@ -11,9 +11,25 @@ from .serializers import (PhoneSerializer, PhoneImageSerializer, ReviewSerialize
                           AirPodSerializer , AirPodImageSerializer , SimilarAirPodSerializer , BrandSerializer)
 from django.db.models import Q
 
-class PhoneViewSet(viewsets.ModelViewSet):
+
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+class FilterByBrandMixin:
+    @action(detail=False, methods=['get'], url_path='brand/(?P<brand_id>\d+)')
+    def by_brand(self, request, brand_id=None):
+        try:
+            queryset = self.get_queryset().filter(brand_id=brand_id)
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+        except:
+            return Response({"error": "Brand not found"}, status=404)
+
+
+class PhoneViewSet(FilterByBrandMixin , viewsets.ModelViewSet):
     queryset = Phone.objects.all()
     serializer_class = PhoneSerializer
+    
 
     @action(detail=True, methods=['get'])
     def similar(self, request, pk=None):
@@ -35,7 +51,7 @@ class PhoneImageViewSet(viewsets.ModelViewSet):
     serializer_class = PhoneImageSerializer
     
     
-class TabletViewSet(viewsets.ModelViewSet):
+class TabletViewSet(FilterByBrandMixin , viewsets.ModelViewSet):
     queryset = Tablet.objects.all()
     serializer_class = TabletSerializer
 
@@ -59,7 +75,7 @@ class TabletImageViewSet(viewsets.ModelViewSet):
     serializer_class = TabletImageSerializer
     
     
-class SmartwatchViewSet(viewsets.ModelViewSet):
+class SmartwatchViewSet(FilterByBrandMixin , viewsets.ModelViewSet):
     queryset = SmartWatch.objects.all()
     serializer_class = SmartWatchSerializer
 
@@ -89,7 +105,7 @@ class SmartwatchViewSet(viewsets.ModelViewSet):
         
 
 
-class AirPodViewSet(viewsets.ModelViewSet):
+class AirPodViewSet(FilterByBrandMixin ,  viewsets.ModelViewSet):
     queryset = AirPods.objects.all()
     serializer_class = AirPodSerializer
     
