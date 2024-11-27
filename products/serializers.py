@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import (Phone, PhoneImage , Review , Tablet , 
                      TabletImage , SmartWatchImage , SmartWatch 
-                     , AirPods , AirPodImage , Brand)
+                     , AirPods , AirPodImage , Brand , Accessory  , AccessoryType)
 from django.db.models import Q
 
 
@@ -276,8 +276,41 @@ class BrandSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
         
-        
+class AccessorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Accessory
+        fields = '__all__'
 
+    def to_representation(self, instance):
+        allowed_fields_map = {
+            'پاوربانک': {'name', 'color', 'capacity'},  # اینجا هم برای پاوربانک اضافه کردیم
+            'قاب گوشی': {'name'},
+            'شارژر': {'name', 'compatibility'},
+        }
 
+        accessory_type = instance.ProductType.name if instance.ProductType else None
+        allowed_fields = allowed_fields_map.get(accessory_type, {'name'})
 
-    
+        representation = super().to_representation(instance)
+        return {key: value for key, value in representation.items() if key in allowed_fields}
+
+    def validate(self, data):
+        product_type = data.get('ProductType')
+        if isinstance(product_type, str):
+            product_type = AccessoryType.objects.get(name=product_type)
+
+        allowed_fields_map = {
+            'پاوربانک': {'name', 'color', 'capacity'},
+            'قاب گوشی': {'name'},
+            'شارژر': {'name', 'compatibility'},
+        }
+
+        accessory_type = product_type.name if product_type else None
+        allowed_fields = allowed_fields_map.get(accessory_type, {'name'})
+
+        # چک کردن فیلدهای غیرمجاز
+        invalid_fields = set(data.keys()) - allowed_fields
+        if invalid_fields:
+            raise serializers.ValidationError(f"Invalid fields for {accessory_type}: {', '.join(invalid_fields)}")
+
+        return data

@@ -93,7 +93,7 @@ class Phone(BaseProduct):
     VoiceAssistant = models.CharField(max_length=50, blank=True, null=True)
     WirelessCharging = models.BooleanField(default=False)
     ReverseCharging = models.BooleanField(default=False)
-    ProductID = models.CharField(max_length=150, blank=True, null=True)
+    ProductID = models.CharField(max_length=500, blank=True, null=True)
     ChargingPort = models.CharField(max_length=50, blank=True, null=True)
   
 
@@ -173,7 +173,7 @@ class Tablet(BaseProduct):
     DigitalZoom = models.CharField(max_length=50 , blank=True , null=True)
     resistance = models.CharField(max_length=100, blank=True, null=True)
     ChargingPort = models.CharField(max_length=50, blank=True, null=True)
-    ProductID = models.CharField(max_length=150, blank=True, null=True)
+    ProductID = models.CharField(max_length=500, blank=True, null=True)
    
    
     def __str__(self):
@@ -228,7 +228,7 @@ class SmartWatch(BaseProduct):
     SIMCardSupport = models.BooleanField(default=False)
     ChargingSource = models.CharField(max_length=50 , blank=True , null=True)
     vibration = models.BooleanField(default=False)
-    ProductID = models.CharField(max_length=150, blank=True, null=True)
+    ProductID = models.CharField(max_length=500, blank=True, null=True)
     cpu = models.CharField(max_length=100, blank=True, null=True)
     InnerMemory = models.CharField(max_length=50, blank=True, null=True)
     RAM = models.CharField(max_length=50, blank=True, null=True)
@@ -260,7 +260,7 @@ class AirPods(BaseProduct):
     color = models.CharField(max_length=50, blank=True, null=True)
     IsFake = models.BooleanField(default=False)
     resistance = models.CharField(max_length=100, blank=True, null=True)
-    connectionType = models.CharField(max_length=50 , blank=True , null=True)
+    ConnectionType = models.CharField(max_length=50 , blank=True , null=True)
     bluetooth = models.CharField(max_length=100, blank=True, null=True)
     ANC = models.BooleanField(default=False)
     BodyMaterial = models.CharField(max_length=50 , blank=True , null=True)
@@ -287,7 +287,7 @@ class AirPods(BaseProduct):
     SpecialFeatures = models.CharField(max_length=300 , blank=True , null=True)
     battery = models.CharField(max_length=50, blank=True, null=True)
     BatteryEfficiency = models.CharField(max_length=100 , blank=True , null=True)
-    ProductID = models.CharField(max_length=150, blank=True, null=True)
+    ProductID = models.CharField(max_length=500, blank=True, null=True)
     compatibility = models.CharField(max_length=50 , blank=True , null=True)
     MultipleConnection = models.BooleanField(default=False) 
     jack = models.BooleanField(default=False)
@@ -312,9 +312,153 @@ class AirPodImage(models.Model):
         return f"Image of {self.airpod.name}"
     
     
+class AccessoryType(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return f'{self.id} - {self.name}'
     
     
+class Accessory(BaseProduct):
+    #PowerBonk
+    ProductType = models.ForeignKey(AccessoryType, on_delete=models.CASCADE, related_name='accessories' , blank=True , null=True)
+    name = models.CharField(max_length=100)
+    color = models.CharField(max_length=50, blank=True, null=True)
+    capacity = models.CharField(max_length=100 , blank=True , null=True)
+    compatibility = models.CharField(max_length=50 , blank=True , null=True)
+    InputPort = models.CharField(max_length=100 , blank=True , null=True)
+    NumberOfOutputPorts = models.CharField(max_length=50 , blank=True , null=True)
+    TotalOutputPower = models.CharField(max_length=50 , blank=True , null=True)
+    DimensionsWeights = models.CharField(max_length=100, blank=True, null=True)
+    BodyMaterial = models.CharField(max_length=50 , blank=True , null=True)
+    LEDIndicator = models.BooleanField(default=False)
+    FastCharging = models.CharField(max_length=100, blank=True, null=True)
+    WirelessCharging = models.BooleanField(default=False)
+    TechnicalSpecifications = models.CharField(max_length=1000 , blank=True , null=True)
+    IncludedItems = models.CharField(max_length=100, blank=True, null=True)
+    ControlsKeys = models.CharField(max_length=100 , blank=True , null=True)
+    resistance = models.CharField(max_length=100, blank=True, null=True)
+    ConnectedCable = models.CharField(max_length=50 , blank=True , null=True)
+    SimultaneousCharging = models.CharField(max_length=100 , blank=True , null=True)
+    InputCurrentIntensity = models.CharField(max_length=50 , blank=True , null=True)
+    InputVoltage = models.CharField(max_length=50 , blank=True , null=True)
+    OutputCurrentIntensity = models.CharField(max_length=50 , blank=True , null=True)
+    OutputVoltage = models.CharField(max_length=50 , blank=True , null=True)
+    OtherFeatures = models.CharField(max_length=500, blank=True, null=True)
+    battery = models.CharField(max_length=50, blank=True, null=True)
+    capacityInWH = models.CharField(max_length=50 , blank=True , null=True)    
+    NominalCapacity = models.CharField(max_length=50 , blank=True , null=True)
+    ProductID = models.CharField(max_length=500, blank=True, null=True)
     
+    #HandsFree
+    bluetooth = models.CharField(max_length=100, blank=True, null=True)
+    NFC = models.BooleanField(default=False)
+    CableLength = models.CharField(max_length=50 , blank=True , null=True)
+    MultipleConnection = models.BooleanField(default=False) 
+    microphone = models.BooleanField(default=False)
+    InterfaceType = models.CharField(max_length=50 , blank=True , null=True)
+    jack = models.BooleanField(default=False)
+    ResponseFrequency = models.CharField(max_length=50 , blank=True , null=True)
+    Impedance = models.CharField(max_length=50 , blank=True , null=True)
+    DriverDiameter = models.CharField(max_length=50 , blank=True , null=True)
+    VoiceControl = models.BooleanField(default=False)
+    ANC = models.BooleanField(default=False)
+    sensitivity = models.CharField(max_length=50 , blank=True, null=True)
+    USBPort = models.CharField(max_length=50, blank=True, null=True)
+    buttons = models.CharField(max_length=300 , blank=True , null=True)
+    type = models.CharField(max_length=50 , blank=True , null=True)
+    VoiceAssistant = models.CharField(max_length=50, blank=True, null=True)
+    SuitableFor = models.CharField(max_length=50 , blank=True , null=True)
+    SpecialFeatures = models.CharField(max_length=300 , blank=True , null=True)
+    PowerSource = models.CharField(max_length=50 , blank=True , null=True)
+    
+    
+    #speaker
+    screen = models.BooleanField(default=False)
+    RemoteControl = models.BooleanField(default=False)
+    AUXGate = models.BooleanField(default=False)
+    ConnectOtherSpeakers = models.BooleanField(default=False)
+    BatteryEfficiency = models.CharField(max_length=100 , blank=True , null=True)
+    ChargingTime = models.CharField(max_length=50 , blank=True , null=True)
+    MemoryCardSupport = models.BooleanField(default=False)
+    SideMicrophone = models.BooleanField(default=False)
+    DanceOfLight = models.BooleanField(default=False)
+    NumberOfSubWoofers = models.CharField(max_length=50 , blank=True , null=True)
+    SubWooferDimensions = models.CharField(max_length=50 , blank=True , null=True)
+    MicrophoneInput = models.BooleanField(default=False)
+    HeadphoneOutput = models.BooleanField(default=False)
+    PerformanceRange = models.CharField(max_length=50 , blank=True , null=True)
+    ConversationMicrophone = models.BooleanField(default=False)
+    BatteryCapacity = models.CharField(max_length=100, blank=True, null=True)
+    radio = models.BooleanField(default=False)
+    AudioTechnologies = models.CharField(max_length=200 , blank=True , null=True)
+    ports = models.CharField(max_length=100 , blank=True , null=True)
+    InputPower = models.CharField(max_length=50 , blank=True , null=True)
+    OutputPower = models.CharField(max_length=50 , blank=True , null=True)
+    ControlsKeys = models.CharField(max_length=100 , blank=True , null=True)
+    
+    #keyboard
+    ConnectionType = models.CharField(max_length=50 , blank=True , null=True)
+    NumberOfKeys = models.CharField(max_length=50 , blank=True , null=True)
+    CompatibleOs = models.CharField(max_length=50 , blank=True , null=True)
+    NumberOfKeystrokes = models.CharField(max_length=50 , blank=True , null=True)
+    lighting = models.CharField(max_length=100 , blank=True , null=True)
+    TypeOfKeyboard = models.CharField(max_length=50 , blank=True , null=True)
+    WristSupport = models.BooleanField(default=False)
+    TypeOfSwitch = models.CharField(max_length=50 , blank=True , null=True)
+    ColorOfSwitch = models.CharField(max_length=50 , blank=True , null=True)
+    AntiGhosting = models.BooleanField(default=False)
+    NumberOfBatteries = models.CharField(max_length=50 , blank=True , null=True) 
+    KeyboardBoard = models.CharField(max_length=50 , blank=True , null=True)
+
+    #flash
+    TransferSpeed = models.CharField(max_length=100 , blank=True , null=True)
+    InterfaceTechnology = models.CharField(max_length=100 , blank=True , null=True)
+    StandardSpeed = models.CharField(max_length=100 , blank=True , null=True)
+    
+    #AUX
+    CableLength = models.CharField(max_length=50 , blank=True , null=True)
+    CableMaterial = models.CharField(max_length=50 , blank=True , null=True)
+    TypeOfCable = models.CharField(max_length=50 , blank=True , null=True)
+    CommunicationPorts = models.CharField(max_length=50 , blank=True , null=True)
+    NumberOfOutputGate = models.CharField(max_length=50 , blank=True , null=True)
+    
+    
+    #MemoryCard
+    ReadingSpeed = models.CharField(max_length=100 , blank=True , null=True)
+    temperature = models.CharField(max_length=100 , blank=True , null=True)
+    WritingSpeed = models.CharField(max_length=100 , blank=True , null=True)
+    
+    
+    #Charger
+    IncludeCable = models.BooleanField(default=False)
+    ChargingPower = models.CharField(max_length=100 , blank=True , null=True)
+    NumberOfOutputPorts = models.CharField(max_length=100 , blank=True , null=True)
+    ChargingFeatures = models.CharField(max_length=100 , blank=True , null=True)
+    PartNumber = models.CharField(max_length=100 , blank=True , null=True)
+    
+    
+    #ChargingCable
+    
+
+    #PhoneCase
+    material = models.CharField(max_length=50 ,blank=True , null=True)
+    structure = models.CharField(max_length=100 , blank=True , null=True)
+    CoverLevel = models.CharField(max_length=150 , blank=True , null=True)
+    
+    
+
+    #WatchBand
+    LockType = models.CharField(max_length=50 , blank=True , null=True)
+    size = models.CharField(max_length=50 , blank=True , null=True)
+    
+    
+    #WatchCover
+    
+
+
+    def __str__(self):
+        return f'{self.id} - {self.name}'
     
     
     

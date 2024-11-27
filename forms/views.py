@@ -6,7 +6,7 @@ from .serializers import AboutUsSerializer, InstallmentSerializer
 #     def has_permission(self, request, view):
 #         return request.user and request.user.is_staff
 
-class AboutUsViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.ListModelMixin, mixins.DestroyModelMixin):
+class AboutUsViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.ListModelMixin, mixins.DestroyModelMixin  , mixins.RetrieveModelMixin):
     queryset = AboutUs.objects.all()
     serializer_class = AboutUsSerializer
 
@@ -15,7 +15,7 @@ class AboutUsViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.Li
     #         return [permissions.IsAuthenticated(), IsAdminUser()]
     #     return [permissions.AllowAny()]
 
-class InstallmentViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.ListModelMixin, mixins.DestroyModelMixin):
+class InstallmentViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.ListModelMixin, mixins.DestroyModelMixin , mixins.RetrieveModelMixin):
     queryset = Installment.objects.all()
     serializer_class = InstallmentSerializer
 

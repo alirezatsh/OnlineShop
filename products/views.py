@@ -1,19 +1,20 @@
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 from .models import (Phone, PhoneImage, Review , Tablet , TabletImage ,
-                     SmartWatch , SmartWatchImage , AirPods , AirPodImage , Brand)
+                     SmartWatch , SmartWatchImage , AirPods , AirPodImage
+                     , Brand , Accessory  , AccessoryType)
 
 from .serializers import (PhoneSerializer, PhoneImageSerializer, ReviewSerializer,
                           SimilarPhoneSerializer , TabletImageSerializer ,
                           TabletSerializer , SimilarTabletSerializer , SmartWatchImageSerializer 
                           , SmartWatchSerializer , SimilarSmartWatchSerializer , 
-                          AirPodSerializer , AirPodImageSerializer , SimilarAirPodSerializer , BrandSerializer)
+                          AirPodSerializer , AirPodImageSerializer , SimilarAirPodSerializer , BrandSerializer , AccessorySerializer)
 from django.db.models import Q
-
-
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework import status
 
 class FilterByBrandMixin:
     @action(detail=False, methods=['get'], url_path='brand/(?P<brand_id>\d+)')
@@ -147,6 +148,48 @@ class BrandViewSet(viewsets.ModelViewSet):
 
 
 
+class AccessoryViewSet(ModelViewSet):
+    queryset = Accessory.objects.all()
+    serializer_class = AccessorySerializer
 
+    @action(detail=False, methods=['get'], url_path='by-type/(?P<type_id>[^/.]+)')
+    def by_type(self, request, type_id=None):
+        try:
+            accessories = Accessory.objects.filter(ProductType_id=type_id)
+            if not accessories.exists():
+                return Response({'error': 'No accessories found for this type'}, status=404)
+            serializer = self.get_serializer(accessories, many=True)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
 
+    def create(self, request, *args, **kwargs):
+        try:
+            accessory_type = request.data.get('ProductType')
 
+            if not accessory_type:
+                return Response({'error': 'ProductType is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+            allowed_fields_map = {
+                'پاوربانک': {'name', 'color', 'capacity'},
+                'قاب گوشی': {'name'},
+                'شارژر': {'name', 'compatibility'},
+            }
+
+            allowed_fields = allowed_fields_map.get(accessory_type, {'name'})
+
+            request_data = request.data.copy()
+
+            # حذف ProductType از داده‌ها قبل از بررسی
+            request_data.pop('ProductType', None)
+
+            # بررسی فیلدهای غیرمجاز
+            invalid_fields = set(request_data.keys()) - allowed_fields
+            if invalid_fields:
+                return Response({
+                    'error': f"Invalid fields for {accessory_type}: {', '.join(invalid_fields)}"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            return super().create(request, *args, **kwargs)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
