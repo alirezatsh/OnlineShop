@@ -52,24 +52,35 @@ class PhoneImageViewSet(viewsets.ModelViewSet):
     serializer_class = PhoneImageSerializer
     
     
-class TabletViewSet(FilterByBrandMixin , viewsets.ModelViewSet):
+class TabletViewSet(viewsets.ModelViewSet):
     queryset = Tablet.objects.all()
     serializer_class = TabletSerializer
 
     @action(detail=True, methods=['get'])
     def similar(self, request, pk=None):
         try:
+            # گرفتن تبلت اصلی
             tablet = self.get_object()
+
+            # فیلتر بر اساس فیلدها
             similar_tablets = Tablet.objects.filter(
-                Q(name__icontains=tablet.name.split()[0])
-            ).exclude(id=tablet.id)[:5]
+                brand=tablet.brand,  # برند دقیقا یکسان
+                RAM=tablet.RAM,      # رم دقیقا یکسان
+                InnerMemory=tablet.InnerMemory,  # حافظه دقیقا یکسان
+                price__gte=tablet.price - 1000000,  # قیمت حوالی
+                price__lte=tablet.price + 1000000
+            ).exclude(id=tablet.id)  # تبلت خودش نباشد
 
-            serializer = SimilarTabletSerializer(similar_tablets, many=True)
-            return Response(serializer.data)
-        except tablet.DoesNotExist:
-            return Response({"error": "tablet not found"}, status=404)
+            # بررسی اگر محصولی پیدا نشد
+            if not similar_tablets.exists():
+                return Response({"message": "No similar tablets found."}, status=200)
 
+            # سریالایز کردن نتایج
+            serializer = TabletSerializer(similar_tablets, many=True)
+            return Response(serializer.data, status=200)
 
+        except Tablet.DoesNotExist:
+            return Response({"error": "Tablet not found"}, status=404)
 
 class TabletImageViewSet(viewsets.ModelViewSet):
     queryset = TabletImage.objects.all()

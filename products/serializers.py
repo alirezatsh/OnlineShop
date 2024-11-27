@@ -128,10 +128,25 @@ class TabletSerializer(serializers.ModelSerializer):
         return instance
 
     def get_similar_tablets(self, obj):
+        ram = obj.RAM
+        inner_memory = obj.InnerMemory
+        brand = obj.brand
+        price = obj.price
+
+        # فیلتر دقیق محصولات مشابه
         similar_tablets = Tablet.objects.filter(
-            Q(name__icontains=obj.name.split()[0])
+            RAM=ram,
+            InnerMemory=inner_memory,
+            brand=brand,
+            price__gte=price - 1000000,
+            price__lte=price + 1000000
         ).exclude(id=obj.id)[:5]
+
         return SimilarTabletSerializer(similar_tablets, many=True).data
+
+
+    
+
 
 
 
@@ -282,16 +297,19 @@ class AccessorySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def to_representation(self, instance):
+        # مپ فیلدهای مجاز برای هر نوع محصول
         allowed_fields_map = {
-            'پاوربانک': {'name', 'color', 'capacity'},  # اینجا هم برای پاوربانک اضافه کردیم
+            'پاوربانک': {'name', 'color', 'capacity'},
             'قاب گوشی': {'name'},
             'شارژر': {'name', 'compatibility'},
         }
 
+        # شناسایی نوع محصول
         accessory_type = instance.ProductType.name if instance.ProductType else None
-        allowed_fields = allowed_fields_map.get(accessory_type, {'name'})
+        allowed_fields = allowed_fields_map.get(accessory_type, {'name'})  # فیلدهای مجاز
 
         representation = super().to_representation(instance)
+        # فیلتر کردن فیلدهای غیرمجاز
         return {key: value for key, value in representation.items() if key in allowed_fields}
 
     def validate(self, data):
@@ -299,6 +317,7 @@ class AccessorySerializer(serializers.ModelSerializer):
         if isinstance(product_type, str):
             product_type = AccessoryType.objects.get(name=product_type)
 
+        # شناسایی نوع محصول و فیلدهای مجاز
         allowed_fields_map = {
             'پاوربانک': {'name', 'color', 'capacity'},
             'قاب گوشی': {'name'},
