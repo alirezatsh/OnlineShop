@@ -1,8 +1,28 @@
 from rest_framework import serializers
 from .models import (Phone, PhoneImage , Review , Tablet , 
                      TabletImage , SmartWatchImage , SmartWatch 
-                     , AirPods , AirPodImage , Brand , Accessory  , AccessoryType , Color)
+                     , AirPods , AirPodImage , Brand , Accessory  , AccessoryType , AccessoryImage , Color )
 from django.db.models import Q
+
+
+class TurnIdIntoString(serializers.ModelSerializer):
+    brand = serializers.PrimaryKeyRelatedField(queryset=Brand.objects.all())
+    color = serializers.PrimaryKeyRelatedField(queryset=Color.objects.all())
+    review = serializers.PrimaryKeyRelatedField(queryset=Review.objects.all())
+    
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['brand'] = instance.brand.name if instance.brand else None
+        representation['color'] = instance.color.name if instance.color else None
+        if instance.review:
+            representation['review'] = {
+                'title': instance.review.title,
+                'description': instance.review.description
+            }
+        else:
+            representation['review'] = None
+        return representation
 
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
@@ -30,16 +50,16 @@ class SimilarPhoneSerializer(serializers.ModelSerializer):
 
 
 class PhoneSerializer(serializers.ModelSerializer):
-    brand = serializers.PrimaryKeyRelatedField(queryset=Brand.objects.all())
-    color = serializers.PrimaryKeyRelatedField(queryset=Color.objects.all())
-    color = serializers.PrimaryKeyRelatedField(queryset=Color.objects.all())
-    review = serializers.PrimaryKeyRelatedField(queryset=Review.objects.all())
     images = PhoneImageSerializer(many=True, read_only=True)
     uploaded_images = serializers.ListField(
         child=serializers.ImageField(max_length=1000000, allow_empty_file=False, use_url=False),
         write_only=True
     )
     similar_phones = serializers.SerializerMethodField()
+    comparison = serializers.PrimaryKeyRelatedField(
+        queryset=Phone.objects.all(),
+        allow_null=True
+    )
 
     class Meta:
         model = Phone
@@ -67,7 +87,7 @@ class PhoneSerializer(serializers.ModelSerializer):
         instance.save()
 
         for image in uploaded_images:
-            TabletImage.objects.create(tablet=instance, image=image)
+            PhoneImage.objects.create(phone=instance, image=image)
 
         return instance
 
@@ -76,20 +96,14 @@ class PhoneSerializer(serializers.ModelSerializer):
             Q(name__icontains=obj.name.split()[0])
         ).exclude(id=obj.id)[:5]
         return SimilarPhoneSerializer(similar_phones, many=True).data
-    
-    
+
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['brand'] = instance.brand.name if instance.brand else None
-        representation['color'] = instance.color.name if instance.color else None
-        if instance.review:
-            representation['review'] = {
-                'title': instance.review.title,
-                'description': instance.review.description
-            }
-        else:
-            representation['review'] = None
+        if instance.comparison:
+            comparison_data = PhoneSerializer(instance.comparison).data
+            representation['comparison'] = comparison_data
         return representation
+ 
 
 
 class TabletImageSerializer(serializers.ModelSerializer):
@@ -112,13 +126,17 @@ class SimilarTabletSerializer(serializers.ModelSerializer):
         return first_image.image.url if first_image else None
 
 
-class TabletSerializer(serializers.ModelSerializer):
+class TabletSerializer(TurnIdIntoString):
     images = TabletImageSerializer(many=True, read_only=True)
     uploaded_images = serializers.ListField(
         child=serializers.ImageField(max_length=1000000, allow_empty_file=False, use_url=False),
         write_only=True
     )
     similar_tablets = serializers.SerializerMethodField()
+    comparison = serializers.PrimaryKeyRelatedField(
+        queryset=Tablet.objects.all(),
+        allow_null=True
+    )
 
     class Meta:
         model = Tablet
@@ -167,6 +185,13 @@ class TabletSerializer(serializers.ModelSerializer):
             return obj.price - obj.discount
         return obj.price  
     
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if instance.comparison:
+            comparison_data = TabletSerializer(instance.comparison).data
+            representation['comparison'] = comparison_data
+        return representation
 
 
 
@@ -189,13 +214,17 @@ class SimilarSmartWatchSerializer(serializers.ModelSerializer):
         return first_image.image.url if first_image else None
 
 
-class SmartWatchSerializer(serializers.ModelSerializer):
+class SmartWatchSerializer(TurnIdIntoString):
     images = SmartWatchImageSerializer(many=True, read_only=True)
     uploaded_images = serializers.ListField(
         child=serializers.ImageField(max_length=1000000, allow_empty_file=False, use_url=False),
         write_only=True
     )
     similar_smartwatch = serializers.SerializerMethodField()
+    comparison = serializers.PrimaryKeyRelatedField(
+        queryset=SmartWatch.objects.all(),
+        allow_null=True
+    )
 
     class Meta:
         model = SmartWatch
@@ -232,6 +261,13 @@ class SmartWatchSerializer(serializers.ModelSerializer):
             Q(name__icontains=obj.name.split()[0])
         ).exclude(id=obj.id)[:5]
         return SimilarSmartWatchSerializer(similar_smartwatch, many=True).data
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if instance.comparison:
+            comparison_data = SmartWatchSerializer(instance.comparison).data
+            representation['comparison'] = comparison_data
+        return representation
 
 
 class AirPodImageSerializer(serializers.ModelSerializer):
@@ -253,13 +289,17 @@ class SimilarAirPodSerializer(serializers.ModelSerializer):
         return first_image.image.url if first_image else None
 
 
-class AirPodSerializer(serializers.ModelSerializer):
+class AirPodSerializer(TurnIdIntoString):
     images = AirPodImageSerializer(many=True, read_only=True)
     uploaded_images = serializers.ListField(
         child=serializers.ImageField(max_length=1000000, allow_empty_file=False, use_url=False),
         write_only=True
     )
     similar_airpods = serializers.SerializerMethodField()
+    comparison = serializers.PrimaryKeyRelatedField(
+        queryset=AirPods.objects.all(),
+        allow_null=True
+    )
 
     class Meta:
         model = AirPods
@@ -296,6 +336,14 @@ class AirPodSerializer(serializers.ModelSerializer):
             Q(name__icontains=obj.name.split()[0])
         ).exclude(id=obj.id)[:5]
         return SimilarAirPodSerializer(similar_airpods, many=True).data
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if instance.comparison:
+            comparison_data = AirPodSerializer(instance.comparison).data
+            representation['comparison'] = comparison_data
+        return representation
+
 
         
 class BrandSerializer(serializers.ModelSerializer):
@@ -309,24 +357,130 @@ class ColorSerializer(serializers.ModelSerializer):
         model = Color
         fields = '__all__'        
         
+        
+class AccessoryImageSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField()
+
+    class Meta:
+        model = Accessory
+        fields = ['image']
+
+class SimilarAccessorySerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Accessory
+        fields = ['name', 'image', 'price']
+
+    def get_image(self, obj):
+        first_image = obj.images.first()
+        return first_image.image.url if first_image else None
+        
 
 
-class AccessorySerializer(serializers.ModelSerializer):
+class AccessorySerializer(TurnIdIntoString):
+    ProductType = serializers.PrimaryKeyRelatedField(queryset=AccessoryType.objects.all())
+    images = AccessoryImageSerializer(many=True, read_only=True)
+    uploaded_images = serializers.ListField(
+        child=serializers.ImageField(max_length=1000000, allow_empty_file=False, use_url=False),
+        write_only=True
+    )
+    similar_accessories = serializers.SerializerMethodField()
+    comparison = serializers.PrimaryKeyRelatedField(
+        queryset=Accessory.objects.all(),
+        allow_null=True
+    )
+
     class Meta:
         model = Accessory
         fields = '__all__'
 
+    def validate_uploaded_images(self, value):
+        if len(value) > 10:
+            raise serializers.ValidationError("You can upload a maximum of 10 images.")
+        return value
+
+    def create(self, validated_data):
+        uploaded_images = validated_data.pop('uploaded_images', [])
+        accessory = Accessory.objects.create(**validated_data)
+
+        for image in uploaded_images:
+            AccessoryImage.objects.create(accessory=accessory, image=image)
+
+        return accessory
+
+    def update(self, instance, validated_data):
+        uploaded_images = validated_data.pop('uploaded_images', [])
+        
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        for image in uploaded_images:
+            AccessoryImage.objects.create(accessory=instance, image=image)
+
+        return instance
+    
+    def get_similar_accessories(self, obj):
+        similar_accessories = Accessory.objects.filter(
+            Q(name__icontains=obj.name.split()[0])
+        ).exclude(id=obj.id)[:5]
+        return SimilarAccessorySerializer(similar_accessories, many=True).data
+
+
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        product_type = instance.ProductType.name.lower()
+        representation['ProductType'] = instance.ProductType.name if instance.ProductType else None
+        product_type = instance.ProductType.name.lower() if instance.ProductType else ''
         
-        if product_type == 'پاوربانک':
-            allowed_fields = ['id', 'name', 'color', 'ProductType']
-        elif product_type == 'شارژر':
-            allowed_fields = ['id', 'name', 'capacity' , 'ProductType']
-        elif product_type == 'فلش':
+        if product_type == 'powerbonk':
+            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison'
+                              'brand' , 'capacity' , 'compatibility' , 'InputPort' , 'NumberOfOutputPorts' , 
+                              'TotalOutputPower', 'DimensionsWeights' , 'BodyMaterial' , 'LEDIndicator' , 
+                              'FastCharging' , 'WirelessCharging' , 'TechnicalSpecifications' , 'IncludedItems' ,
+                              'ControlsKeys' , 'resistance' , 'ConnectedCable' , 'SimultaneousCharging' , 
+                              'InputCurrentIntensity' , 'InputVoltage' , 'OutputCurrentIntensity' , 'OutputVoltage' , 
+                              'OtherFeatures' , 'battery' , 'capacityInWH' , 'NominalCapacity' , 'ProductID' ]
+            
+        elif product_type == 'headphone':
+            allowed_fields = ['id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison'
+                              'bluetooth' , 'NFC' , 'CableLength' , 'MultipleConnection' , 'microphone' ,
+                              'InterfaceType' , 'jack' , 'ResponseFrequency' , 'Impedance' , 'DriverDiameter' , 
+                              'VoiceControl' , 'ANC' , 'sensitivity' , 'USBPort' , 'buttons' , 'type' , 'VoiceAssistant' ,
+                              'SuitableFor' , 'SpecialFeatures' , 'PowerSource'
+                              ]
+            
+        elif product_type == 'speaker':
             allowed_fields = ['id', 'name', 'battery', 'ProductType']
+            
+        elif product_type == 'keyboard':
+            allowed_fields = ['id', 'name', 'battery', 'ProductType']
+            
+        elif product_type == 'flash':
+            allowed_fields = ['id', 'name', 'battery', 'ProductType']
+            
+        elif product_type == 'aux':
+            allowed_fields = ['id', 'name', 'battery', 'ProductType']
+            
+        elif product_type == 'memorycard':
+            allowed_fields = ['id', 'name', 'battery', 'ProductType']
+            
+        elif product_type == 'charger':
+            allowed_fields = ['id', 'name', 'battery', 'ProductType']
+            
+        elif product_type == 'chargingcable':
+            allowed_fields = ['id', 'name', 'battery', 'ProductType']
+            
+        elif product_type == 'phonecase':
+            allowed_fields = ['id', 'name', 'battery', 'ProductType']
+            
+        elif product_type == 'watchband':
+            allowed_fields = ['id', 'name', 'battery', 'ProductType']
+            
+        elif product_type == 'watchcover':
+            allowed_fields = ['id', 'name', 'battery', 'ProductType']
+            
         else:
             allowed_fields = ['id', 'name', 'ProductType']
-
-        return {key: representation[key] for key in allowed_fields}
+        
+        return {key: representation[key] for key in allowed_fields if key in representation}

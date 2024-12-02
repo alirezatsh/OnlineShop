@@ -4,14 +4,15 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from .models import (Phone, PhoneImage, Review , Tablet , TabletImage ,
                      SmartWatch , SmartWatchImage , AirPods , AirPodImage
-                     , Brand , Accessory  , AccessoryType , Color)
+                     , Brand , Accessory  , AccessoryType , AccessoryImage , Color)
 
 from .serializers import (PhoneSerializer, PhoneImageSerializer, ReviewSerializer,
                           SimilarPhoneSerializer , TabletImageSerializer ,
                           TabletSerializer , SimilarTabletSerializer , SmartWatchImageSerializer 
                           , SmartWatchSerializer , SimilarSmartWatchSerializer , 
                           AirPodSerializer , AirPodImageSerializer , SimilarAirPodSerializer 
-                          , BrandSerializer , AccessorySerializer , ColorSerializer)
+                          , BrandSerializer , AccessorySerializer , ColorSerializer , AccessoryImageSerializer 
+                          , SimilarAccessorySerializer)
 from django.db.models import Q
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -161,11 +162,17 @@ class ColorViewSet(viewsets.ModelViewSet):
 
 
 class AccessoryViewSet(viewsets.ModelViewSet):
-    queryset = Accessory.objects.all()
+    queryset = Accessory.objects.select_related('ProductType')
     serializer_class = AccessorySerializer
 
     @action(detail=False, methods=['get'], url_path='by-type/(?P<type_id>[^/.]+)')
     def filter_by_type(self, request, type_id=None):
-        filtered_accessories = self.queryset.filter(ProductType_id=type_id)
+        # فیلتر بر اساس ProductType
+        filtered_accessories = self.queryset.filter(ProductType__id=type_id)
         serializer = self.get_serializer(filtered_accessories, many=True)
         return Response(serializer.data)
+    
+    
+class AccessoryImageViewSet(viewsets.ModelViewSet):
+    queryset = AccessoryImage.objects.all()
+    serializer_class = AccessoryImageSerializer

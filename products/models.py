@@ -44,6 +44,7 @@ class BaseProduct(models.Model):
     
 class Phone(BaseProduct):
     cpu = models.CharField(max_length=100, blank=True, null=True)
+    comparison = models.ForeignKey('self' , on_delete=models.CASCADE , blank=True , null=True)
     InnerMemory = models.CharField(max_length=50, blank=True, null=True)
     RAM = models.CharField(max_length=50, blank=True, null=True)
     size = models.CharField(max_length=50, blank=True, null=True)
@@ -118,6 +119,7 @@ class PhoneImage(models.Model):
     
 class Tablet(BaseProduct):
     cpu = models.CharField(max_length=100, blank=True, null=True)
+    comparison = models.ForeignKey('self' , on_delete=models.CASCADE , blank=True , null=True)
     InnerMemory = models.IntegerField( blank=True, null=True)
     RAM = models.IntegerField( blank=True, null=True)
     size = models.CharField(max_length=50, blank=True, null=True)
@@ -198,6 +200,7 @@ class TabletImage(models.Model):
 
 class SmartWatch(BaseProduct):
     IsFake = models.BooleanField(default=False)
+    comparison = models.ForeignKey('self' , on_delete=models.CASCADE , blank=True , null=True)
     compatibility = models.CharField(max_length=50 , blank=True , null=True)
     BatteryCapacity = models.CharField(max_length=50 , blank=True , null=True)
     FarsiSupport = models.BooleanField(default=False)
@@ -259,6 +262,7 @@ class SmartWatchImage(models.Model):
     
 class AirPods(BaseProduct):
     IsFake = models.BooleanField(default=False)
+    comparison = models.ForeignKey('self' , on_delete=models.CASCADE , blank=True , null=True)
     resistance = models.CharField(max_length=100, blank=True, null=True)
     ConnectionType = models.CharField(max_length=50 , blank=True , null=True)
     bluetooth = models.CharField(max_length=100, blank=True, null=True)
@@ -321,6 +325,7 @@ class AccessoryType(models.Model):
     
 class Accessory(BaseProduct):
     #PowerBonk
+    comparison = models.ForeignKey('self' , on_delete=models.CASCADE , blank=True , null=True)
     ProductType = models.ForeignKey(AccessoryType, on_delete=models.CASCADE, related_name='accessories' , blank=True , null=True)
     capacity = models.CharField(max_length=100 , blank=True , null=True)
     compatibility = models.CharField(max_length=50 , blank=True , null=True)
@@ -460,7 +465,12 @@ class Accessory(BaseProduct):
     
     
     
-    
+class AccessoryImage(models.Model):
+    accessory = models.ForeignKey(Accessory, related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='accessory_images/')
+
+    def __str__(self):
+        return f"Image of {self.accessory.name}"
     
     
     
