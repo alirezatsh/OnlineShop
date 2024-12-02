@@ -29,7 +29,7 @@ class FilterByBrandMixin:
 
 
 class PhoneViewSet(FilterByBrandMixin , viewsets.ModelViewSet):
-    queryset = Phone.objects.all()
+    queryset = Phone.objects.select_related('brand', 'color' , 'review')
     serializer_class = PhoneSerializer
     
 

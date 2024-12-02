@@ -4,6 +4,11 @@ from .models import (Phone, PhoneImage , Review , Tablet ,
                      , AirPods , AirPodImage , Brand , Accessory  , AccessoryType , Color)
 from django.db.models import Q
 
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = '__all__'
+
 
 class PhoneImageSerializer(serializers.ModelSerializer):
     image = serializers.ImageField()
@@ -25,6 +30,10 @@ class SimilarPhoneSerializer(serializers.ModelSerializer):
 
 
 class PhoneSerializer(serializers.ModelSerializer):
+    brand = serializers.PrimaryKeyRelatedField(queryset=Brand.objects.all())
+    color = serializers.PrimaryKeyRelatedField(queryset=Color.objects.all())
+    color = serializers.PrimaryKeyRelatedField(queryset=Color.objects.all())
+    review = serializers.PrimaryKeyRelatedField(queryset=Review.objects.all())
     images = PhoneImageSerializer(many=True, read_only=True)
     uploaded_images = serializers.ListField(
         child=serializers.ImageField(max_length=1000000, allow_empty_file=False, use_url=False),
@@ -67,6 +76,20 @@ class PhoneSerializer(serializers.ModelSerializer):
             Q(name__icontains=obj.name.split()[0])
         ).exclude(id=obj.id)[:5]
         return SimilarPhoneSerializer(similar_phones, many=True).data
+    
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['brand'] = instance.brand.name if instance.brand else None
+        representation['color'] = instance.color.name if instance.color else None
+        if instance.review:
+            representation['review'] = {
+                'title': instance.review.title,
+                'description': instance.review.description
+            }
+        else:
+            representation['review'] = None
+        return representation
 
 
 class TabletImageSerializer(serializers.ModelSerializer):
@@ -143,11 +166,7 @@ class TabletSerializer(serializers.ModelSerializer):
         if obj.discount and obj.discount > 0:
             return obj.price - obj.discount
         return obj.price  
-
-
     
-
-
 
 
 
@@ -278,12 +297,6 @@ class AirPodSerializer(serializers.ModelSerializer):
         ).exclude(id=obj.id)[:5]
         return SimilarAirPodSerializer(similar_airpods, many=True).data
 
-
-
-class ReviewSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Review
-        fields = '__all__'
         
 class BrandSerializer(serializers.ModelSerializer):
     class Meta:
