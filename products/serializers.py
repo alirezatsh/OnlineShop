@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import (Phone, PhoneImage , Review , Tablet , 
                      TabletImage , SmartWatchImage , SmartWatch 
-                     , AirPods , AirPodImage , Brand , Accessory  , AccessoryType)
+                     , AirPods , AirPodImage , Brand , Accessory  , AccessoryType , Color)
 from django.db.models import Q
 
 
@@ -128,21 +128,21 @@ class TabletSerializer(serializers.ModelSerializer):
         return instance
 
     def get_similar_tablets(self, obj):
-        ram = obj.RAM
-        inner_memory = obj.InnerMemory
-        brand = obj.brand
-        price = obj.price
-
-        # فیلتر دقیق محصولات مشابه
+        # پیدا کردن محصولات مشابه
         similar_tablets = Tablet.objects.filter(
-            RAM=ram,
-            InnerMemory=inner_memory,
-            brand=brand,
-            price__gte=price - 1000000,
-            price__lte=price + 1000000
-        ).exclude(id=obj.id)[:5]
+            RAM=obj.RAM,
+            InnerMemory=obj.InnerMemory,
+            brand=obj.brand,
+            price__gte=obj.price - 1000000,
+            price__lte=obj.price + 1000000
+        ).exclude(id=obj.id)[:5] 
 
-        return SimilarTabletSerializer(similar_tablets, many=True).data
+        return TabletSerializer(similar_tablets, many=True).data
+
+    def get_final_price(self, obj):
+        if obj.discount and obj.discount > 0:
+            return obj.price - obj.discount
+        return obj.price  
 
 
     
@@ -290,46 +290,30 @@ class BrandSerializer(serializers.ModelSerializer):
         model = Brand
         fields = '__all__'
         
+
+class ColorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Color
+        fields = '__all__'        
         
+
+
 class AccessorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Accessory
         fields = '__all__'
 
     def to_representation(self, instance):
-        # مپ فیلدهای مجاز برای هر نوع محصول
-        allowed_fields_map = {
-            'پاوربانک': {'name', 'color', 'capacity'},
-            'قاب گوشی': {'name'},
-            'شارژر': {'name', 'compatibility'},
-        }
-
-        # شناسایی نوع محصول
-        accessory_type = instance.ProductType.name if instance.ProductType else None
-        allowed_fields = allowed_fields_map.get(accessory_type, {'name'})  # فیلدهای مجاز
-
         representation = super().to_representation(instance)
-        # فیلتر کردن فیلدهای غیرمجاز
-        return {key: value for key, value in representation.items() if key in allowed_fields}
+        product_type = instance.ProductType.name.lower()
+        
+        if product_type == 'پاوربانک':
+            allowed_fields = ['id', 'name', 'color', 'ProductType']
+        elif product_type == 'شارژر':
+            allowed_fields = ['id', 'name', 'capacity' , 'ProductType']
+        elif product_type == 'فلش':
+            allowed_fields = ['id', 'name', 'battery', 'ProductType']
+        else:
+            allowed_fields = ['id', 'name', 'ProductType']
 
-    def validate(self, data):
-        product_type = data.get('ProductType')
-        if isinstance(product_type, str):
-            product_type = AccessoryType.objects.get(name=product_type)
-
-        # شناسایی نوع محصول و فیلدهای مجاز
-        allowed_fields_map = {
-            'پاوربانک': {'name', 'color', 'capacity'},
-            'قاب گوشی': {'name'},
-            'شارژر': {'name', 'compatibility'},
-        }
-
-        accessory_type = product_type.name if product_type else None
-        allowed_fields = allowed_fields_map.get(accessory_type, {'name'})
-
-        # چک کردن فیلدهای غیرمجاز
-        invalid_fields = set(data.keys()) - allowed_fields
-        if invalid_fields:
-            raise serializers.ValidationError(f"Invalid fields for {accessory_type}: {', '.join(invalid_fields)}")
-
-        return data
+        return {key: representation[key] for key in allowed_fields}

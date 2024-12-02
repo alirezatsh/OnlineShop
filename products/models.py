@@ -14,8 +14,16 @@ class Brand(models.Model):
     
     def __str__(self):
         return self.name
+    
+class Color(models.Model):
+    name = models.CharField(max_length=100 , blank=True , null=True)
+    
+    def __str__(self):
+        return self.name
 
 class BaseProduct(models.Model):
+    name = models.CharField(max_length=100, blank=True, null=True)
+    color = models.ForeignKey(Color , on_delete=models.CASCADE , blank=True , null=True)
     price = models.PositiveIntegerField(default=0) 
     discount = models.PositiveIntegerField(default=0)  
     FinalPrice = models.PositiveIntegerField(editable=False, null=True)
@@ -35,9 +43,7 @@ class BaseProduct(models.Model):
 
     
 class Phone(BaseProduct):
-    name = models.CharField(max_length=100, blank=True, null=True)
     cpu = models.CharField(max_length=100, blank=True, null=True)
-    color = models.CharField(max_length=50, blank=True, null=True)
     InnerMemory = models.CharField(max_length=50, blank=True, null=True)
     RAM = models.CharField(max_length=50, blank=True, null=True)
     size = models.CharField(max_length=50, blank=True, null=True)
@@ -111,9 +117,7 @@ class PhoneImage(models.Model):
     
     
 class Tablet(BaseProduct):
-    name = models.CharField(max_length=100, blank=True, null=True)
     cpu = models.CharField(max_length=100, blank=True, null=True)
-    color = models.CharField(max_length=50, blank=True, null=True)
     InnerMemory = models.IntegerField( blank=True, null=True)
     RAM = models.IntegerField( blank=True, null=True)
     size = models.CharField(max_length=50, blank=True, null=True)
@@ -193,8 +197,6 @@ class TabletImage(models.Model):
 
 
 class SmartWatch(BaseProduct):
-    name = models.CharField(max_length=50 , blank=True , null=True)
-    color = models.CharField(max_length=50, blank=True, null=True)
     IsFake = models.BooleanField(default=False)
     compatibility = models.CharField(max_length=50 , blank=True , null=True)
     BatteryCapacity = models.CharField(max_length=50 , blank=True , null=True)
@@ -256,8 +258,6 @@ class SmartWatchImage(models.Model):
     
     
 class AirPods(BaseProduct):
-    name = models.CharField(max_length=50 , blank=True , null=True)
-    color = models.CharField(max_length=50, blank=True, null=True)
     IsFake = models.BooleanField(default=False)
     resistance = models.CharField(max_length=100, blank=True, null=True)
     ConnectionType = models.CharField(max_length=50 , blank=True , null=True)
@@ -322,8 +322,6 @@ class AccessoryType(models.Model):
 class Accessory(BaseProduct):
     #PowerBonk
     ProductType = models.ForeignKey(AccessoryType, on_delete=models.CASCADE, related_name='accessories' , blank=True , null=True)
-    name = models.CharField(max_length=100)
-    color = models.CharField(max_length=50, blank=True, null=True)
     capacity = models.CharField(max_length=100 , blank=True , null=True)
     compatibility = models.CharField(max_length=50 , blank=True , null=True)
     InputPort = models.CharField(max_length=100 , blank=True , null=True)

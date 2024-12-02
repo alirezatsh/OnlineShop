@@ -4,13 +4,14 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from .models import (Phone, PhoneImage, Review , Tablet , TabletImage ,
                      SmartWatch , SmartWatchImage , AirPods , AirPodImage
-                     , Brand , Accessory  , AccessoryType)
+                     , Brand , Accessory  , AccessoryType , Color)
 
 from .serializers import (PhoneSerializer, PhoneImageSerializer, ReviewSerializer,
                           SimilarPhoneSerializer , TabletImageSerializer ,
                           TabletSerializer , SimilarTabletSerializer , SmartWatchImageSerializer 
                           , SmartWatchSerializer , SimilarSmartWatchSerializer , 
-                          AirPodSerializer , AirPodImageSerializer , SimilarAirPodSerializer , BrandSerializer , AccessorySerializer)
+                          AirPodSerializer , AirPodImageSerializer , SimilarAirPodSerializer 
+                          , BrandSerializer , AccessorySerializer , ColorSerializer)
 from django.db.models import Q
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -59,25 +60,21 @@ class TabletViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'])
     def similar(self, request, pk=None):
         try:
-            # گرفتن تبلت اصلی
+            # گرفتن محصول فعلی بر اساس pk
             tablet = self.get_object()
 
-            # فیلتر بر اساس فیلدها
+            # فیلتر کردن محصولات مشابه بر اساس سه شرط
             similar_tablets = Tablet.objects.filter(
-                brand=tablet.brand,  # برند دقیقا یکسان
-                RAM=tablet.RAM,      # رم دقیقا یکسان
-                InnerMemory=tablet.InnerMemory,  # حافظه دقیقا یکسان
-                price__gte=tablet.price - 1000000,  # قیمت حوالی
-                price__lte=tablet.price + 1000000
-            ).exclude(id=tablet.id)  # تبلت خودش نباشد
+                Q(RAM=tablet.RAM) &  # رم باید یکسان باشد
+                Q(InnerMemory=tablet.InnerMemory) &  # حافظه باید یکسان باشد
+                Q(brand=tablet.brand)  # برند باید یکسان باشد
+            ).exclude(id=tablet.id)  # محصول فعلی را حذف کن
 
-            # بررسی اگر محصولی پیدا نشد
             if not similar_tablets.exists():
-                return Response({"message": "No similar tablets found."}, status=200)
+                return Response({"error": "No similar tablets found."}, status=404)
 
-            # سریالایز کردن نتایج
             serializer = TabletSerializer(similar_tablets, many=True)
-            return Response(serializer.data, status=200)
+            return Response(serializer.data)
 
         except Tablet.DoesNotExist:
             return Response({"error": "Tablet not found"}, status=404)
@@ -157,50 +154,18 @@ class BrandViewSet(viewsets.ModelViewSet):
     serializer_class = BrandSerializer
 
 
+class ColorViewSet(viewsets.ModelViewSet):
+    queryset = Color.objects.all()
+    serializer_class = ColorSerializer
 
 
-class AccessoryViewSet(ModelViewSet):
+
+class AccessoryViewSet(viewsets.ModelViewSet):
     queryset = Accessory.objects.all()
     serializer_class = AccessorySerializer
 
     @action(detail=False, methods=['get'], url_path='by-type/(?P<type_id>[^/.]+)')
-    def by_type(self, request, type_id=None):
-        try:
-            accessories = Accessory.objects.filter(ProductType_id=type_id)
-            if not accessories.exists():
-                return Response({'error': 'No accessories found for this type'}, status=404)
-            serializer = self.get_serializer(accessories, many=True)
-            return Response(serializer.data)
-        except Exception as e:
-            return Response({'error': str(e)}, status=500)
-
-    def create(self, request, *args, **kwargs):
-        try:
-            accessory_type = request.data.get('ProductType')
-
-            if not accessory_type:
-                return Response({'error': 'ProductType is required'}, status=status.HTTP_400_BAD_REQUEST)
-
-            allowed_fields_map = {
-                'پاوربانک': {'name', 'color', 'capacity'},
-                'قاب گوشی': {'name'},
-                'شارژر': {'name', 'compatibility'},
-            }
-
-            allowed_fields = allowed_fields_map.get(accessory_type, {'name'})
-
-            request_data = request.data.copy()
-
-            # حذف ProductType از داده‌ها قبل از بررسی
-            request_data.pop('ProductType', None)
-
-            # بررسی فیلدهای غیرمجاز
-            invalid_fields = set(request_data.keys()) - allowed_fields
-            if invalid_fields:
-                return Response({
-                    'error': f"Invalid fields for {accessory_type}: {', '.join(invalid_fields)}"
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-            return super().create(request, *args, **kwargs)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    def filter_by_type(self, request, type_id=None):
+        filtered_accessories = self.queryset.filter(ProductType_id=type_id)
+        serializer = self.get_serializer(filtered_accessories, many=True)
+        return Response(serializer.data)

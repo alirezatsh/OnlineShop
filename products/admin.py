@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (Phone, PhoneImage , Review , Tablet , 
                      TabletImage , SmartWatch , SmartWatchImage
-                     , AirPods , AirPodImage , Brand , Accessory , AccessoryType)
+                     , AirPods , AirPodImage , Brand , Accessory , AccessoryType , Color)
 
 class PhoneImageInline(admin.TabularInline):
     model = PhoneImage
@@ -41,6 +41,7 @@ admin.site.register(AirPods , AirPodAdmin)
 admin.site.register(AirPodImage)
 admin.site.register(Review)
 admin.site.register(Brand)
+admin.site.register(Color)
 admin.site.register(AccessoryType)
 admin.site.register(Accessory)
 
