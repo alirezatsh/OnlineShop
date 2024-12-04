@@ -24,6 +24,7 @@ class TurnIdIntoString(serializers.ModelSerializer):
             representation['review'] = None
         return representation
 
+
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
