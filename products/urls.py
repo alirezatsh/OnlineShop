@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (PhoneViewSet, PhoneImageViewSet , ReviewViewSet , 
                     TabletImageViewSet , TabletViewSet , SmartwatchViewSet
-                    , AirPodViewSet , BrandViewSet , AccessoryViewSet , ColorViewSet)
+                    , AirPodViewSet , BrandViewSet , AccessoryViewSet , ColorViewSet , AccessoryTypeViewSet)
 
 router = DefaultRouter()
 router.register(r'phones', PhoneViewSet)
@@ -15,6 +15,7 @@ router.register(r'reviews', ReviewViewSet , basename='review')
 router.register(r'brands' , BrandViewSet)
 router.register(r'accessories' , AccessoryViewSet , basename='accessory')
 router.register(r'colors' , ColorViewSet , basename='colors')
+router.register(r'accessorytype' , AccessoryTypeViewSet , basename='accessorytype')
 
 
 

@@ -1,5 +1,6 @@
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework import viewsets, permissions, mixins
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from .models import (Phone, PhoneImage, Review , Tablet , TabletImage ,
@@ -12,7 +13,7 @@ from .serializers import (PhoneSerializer, PhoneImageSerializer, ReviewSerialize
                           , SmartWatchSerializer , SimilarSmartWatchSerializer , 
                           AirPodSerializer , AirPodImageSerializer , SimilarAirPodSerializer 
                           , BrandSerializer , AccessorySerializer , ColorSerializer , AccessoryImageSerializer 
-                          , SimilarAccessorySerializer)
+                          , SimilarAccessorySerializer , AccessoryTypeSerializers)
 from django.db.models import Q
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -176,3 +177,8 @@ class AccessoryViewSet(viewsets.ModelViewSet):
 class AccessoryImageViewSet(viewsets.ModelViewSet):
     queryset = AccessoryImage.objects.all()
     serializer_class = AccessoryImageSerializer
+    
+    
+class AccessoryTypeViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin):
+    queryset = AccessoryType.objects.all()
+    serializer_class = AccessoryTypeSerializers

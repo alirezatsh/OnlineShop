@@ -443,44 +443,81 @@ class AccessorySerializer(TurnIdIntoString):
                               'OtherFeatures' , 'battery' , 'capacityInWH' , 'NominalCapacity' , 'ProductID' ]
             
         elif product_type == 'headphone':
-            allowed_fields = ['id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison'
+            allowed_fields = ['id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand'
                               'bluetooth' , 'NFC' , 'CableLength' , 'MultipleConnection' , 'microphone' ,
                               'InterfaceType' , 'jack' , 'ResponseFrequency' , 'Impedance' , 'DriverDiameter' , 
                               'VoiceControl' , 'ANC' , 'sensitivity' , 'USBPort' , 'buttons' , 'type' , 'VoiceAssistant' ,
-                              'SuitableFor' , 'SpecialFeatures' , 'PowerSource'
+                              'SuitableFor' , 'SpecialFeatures' , 'PowerSource' , 'DimensionsWeights' , 'ProductID',
+                              'compatibility' , 'resistance' , 'IncludedItems' , 'BodyMaterial' , 'OtherFeatures'
                               ]
             
         elif product_type == 'speaker':
-            allowed_fields = ['id', 'name', 'battery', 'ProductType']
+            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand'
+                              'screen' , 'RemoteControl' , 'AUXGate' , 'ConnectOtherSpeakers' , 'BatteryEfficiency' ,
+                              'ChargingTime' , 'MemoryCardSupport' , 'SideMicrophone' , 'DanceOfLight' , 'NumberOfSubWoofers' ,
+                              'SubWooferDimensions' , 'MicrophoneInput' , 'HeadphoneOutput' , 'PerformanceRange' , 'ConversationMicrophone'
+                              , 'BatteryCapacity' , 'radio' , 'AudioTechnologies' , 'ports' , 'InputPower' , 'OutputPower' , 'ControlsKeys' , 'OtherFeatures'
+                              'ConnectionType' , 'bluetooth' , 'PowerSource' , 'DimensionsWeights' , 'IncludedItems' ,
+                              'BodyMaterial' , 'resistance' , 'USBPort' , 'sensitivity' , 'battery' , 'ProductID' , 'VoiceAssistant'
+                              ]
             
         elif product_type == 'keyboard':
-            allowed_fields = ['id', 'name', 'battery', 'ProductType']
+            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand'
+                              'ConnectionType' , 'NumberOfKeys' , 'CompatibleOs' , 'NumberOfKeystrokes' , 'lighting' , 'TypeOfKeyboard' , 'WristSupport' , 'TypeOfSwitch' , 
+                              'ColorOfSwitch' , 'AntiGhosting' , 'NumberOfBatteries' , 'KeyboardBoard' , 'DimensionsWeights' ,
+                              'PowerSource' , 'ProductID' , 'OtherFeatures' , 
+                              ]
             
         elif product_type == 'flash':
-            allowed_fields = ['id', 'name', 'battery', 'ProductType']
+            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand'
+                              'TransferSpeed' , 'InterfaceTechnology' , 'StandardSpeed' , 'DimensionsWeights' , 
+                              'resistance' , 'capacity' , 'ProductID' , 'OtherFeatures' , 'PowerSource' , 
+                              ]
             
         elif product_type == 'aux':
-            allowed_fields = ['id', 'name', 'battery', 'ProductType']
+            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand'
+                              'CableLength' , 'CableMaterial' , 'TypeOfCable' , 'CommunicationPorts' ,
+                              'NumberOfOutputGate' , 'SuitableFor' , 'OtherFeatures' , ''
+                              ]
             
         elif product_type == 'memorycard':
-            allowed_fields = ['id', 'name', 'battery', 'ProductType']
+            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand'
+                              'ReadingSpeed' , 'temperature' , 'WritingSpeed' , 'capacity' , 'DimensionsWeights' , 'resistance' , 'ProductID' , ''
+                              ]
             
         elif product_type == 'charger':
-            allowed_fields = ['id', 'name', 'battery', 'ProductType']
+            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand'
+                              'IncludeCable' , 'ChargingPower' , 'NumberOfOutputPorts' , 'ChargingFeatures' , 'PartNumber' ,
+                              'OutputVoltage' , 'SuitableFor' , 'InputVoltage' , 'ProductID' , 'OtherFeatures' , 'InputCurrentIntensity' , 'OutputCurrentIntensity'
+                              ]
             
         elif product_type == 'chargingcable':
-            allowed_fields = ['id', 'name', 'battery', 'ProductType']
+            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand'
+                              'InterfaceType' , 'CableLength' , 'SuitableFor' , 'OtherFeatures' , 'compatibility' , 'FastCharging' , 'CableMaterial'
+                              ]
             
         elif product_type == 'phonecase':
-            allowed_fields = ['id', 'name', 'battery', 'ProductType']
+            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand'
+                              'material' , 'structure' , 'CoverLevel' , 'SuitableFor' , 'SpecialFeatures' , '' , '' , ''
+                              ]
             
         elif product_type == 'watchband':
-            allowed_fields = ['id', 'name', 'battery', 'ProductType']
+            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand'
+                              'LockType' , 'size' , 'SuitableFor' , 'BodyMaterial' , 'OtherFeatures' , 
+                              ]
             
         elif product_type == 'watchcover':
-            allowed_fields = ['id', 'name', 'battery', 'ProductType']
+            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand'
+                              'SuitableFor' , 'OtherFeatures' 
+                              ]
             
         else:
             allowed_fields = ['id', 'name', 'ProductType']
         
         return {key: representation[key] for key in allowed_fields if key in representation}
+
+
+class AccessoryTypeSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = AccessoryType
+        fields = '__all__'
