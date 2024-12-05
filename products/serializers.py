@@ -93,6 +93,7 @@ class PhoneSerializer(serializers.ModelSerializer):
         return instance
 
     def get_similar_phones(self, obj):
+      if obj.name and len(obj.name.split()) > 0:   
         similar_phones = Phone.objects.filter(
             Q(name__icontains=obj.name.split()[0])
         ).exclude(id=obj.id)[:5]
