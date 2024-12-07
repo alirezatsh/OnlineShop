@@ -84,6 +84,7 @@ class PhoneSerializer(TurnIdIntoString):
         return instance
 
     def get_similar_phones(self, obj):
+      if obj.name and len(obj.name.split()) > 0:   
         similar_phones = Phone.objects.filter(
             RAM=obj.RAM,
             InnerMemory=obj.InnerMemory,
