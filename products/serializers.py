@@ -133,7 +133,7 @@ class SimilarTabletSerializer(serializers.ModelSerializer):
         return first_image.image.url if first_image else None
 
 
-class TabletSerializer(serializers.ModelSerializer):
+class TabletSerializer(TurnIdIntoString):
     images = TabletImageSerializer(many=True, read_only=True)
     uploaded_images = serializers.ListField(
         child=serializers.ImageField(max_length=1000000, allow_empty_file=False, use_url=False),
