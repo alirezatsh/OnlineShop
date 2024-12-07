@@ -2,12 +2,13 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework import viewsets, permissions, mixins
 from rest_framework.response import Response
+from rest_framework.filters import SearchFilter
 from rest_framework.viewsets import ModelViewSet
-from .models import (Phone, PhoneImage, Review , Tablet , TabletImage ,
+from .models import (Phone, PhoneImage , Tablet , TabletImage ,
                      SmartWatch , SmartWatchImage , AirPods , AirPodImage
                      , Brand , Accessory  , AccessoryType , AccessoryImage , Color)
 
-from .serializers import (PhoneSerializer, PhoneImageSerializer, ReviewSerializer,
+from .serializers import (PhoneSerializer, PhoneImageSerializer, 
                           SimilarPhoneSerializer , TabletImageSerializer ,
                           TabletSerializer , SimilarTabletSerializer , SmartWatchImageSerializer 
                           , SmartWatchSerializer , SimilarSmartWatchSerializer , 
@@ -18,6 +19,26 @@ from django.db.models import Q
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
+
+
+
+
+
+class ProductSearchViewSet(viewsets.GenericViewSet):
+    serializer_class = None  
+    filter_backends = [SearchFilter]
+    search_fields = ['name']  
+
+    def get_queryset(self):
+        search_query = self.request.query_params.get('search', None)
+        if search_query:
+            mobiles = Phone.objects.filter(name__icontains=search_query)
+            tablets = Tablet.objects.filter(name__icontains=search_query)
+            watches = SmartWatch.objects.filter(name__icontains=search_query)
+            airpods = AirPods.objects.filter(name__icontains=search_query)
+            return mobiles | tablets | watches | airpods
+        return Phone.objects.none()  
+
 
 class FilterByBrandMixin:
     @action(detail=False, methods=['get'], url_path='brand/(?P<brand_id>\d+)')
@@ -31,7 +52,7 @@ class FilterByBrandMixin:
 
 
 class PhoneViewSet(FilterByBrandMixin , viewsets.ModelViewSet):
-    queryset = Phone.objects.select_related('brand', 'color' , 'review')
+    queryset = Phone.objects.select_related('brand', 'color')
     serializer_class = PhoneSerializer
     
 
@@ -53,8 +74,8 @@ class PhoneViewSet(FilterByBrandMixin , viewsets.ModelViewSet):
 class PhoneImageViewSet(viewsets.ModelViewSet):
     queryset = PhoneImage.objects.all()
     serializer_class = PhoneImageSerializer
-    
-    
+
+
 class TabletViewSet(viewsets.ModelViewSet):
     queryset = Tablet.objects.all()
     serializer_class = TabletSerializer
@@ -62,21 +83,22 @@ class TabletViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'])
     def similar(self, request, pk=None):
         try:
-            # گرفتن محصول فعلی بر اساس pk
             tablet = self.get_object()
 
-            # فیلتر کردن محصولات مشابه بر اساس سه شرط
             similar_tablets = Tablet.objects.filter(
-                Q(RAM=tablet.RAM) &  # رم باید یکسان باشد
-                Q(InnerMemory=tablet.InnerMemory) &  # حافظه باید یکسان باشد
-                Q(brand=tablet.brand)  # برند باید یکسان باشد
-            ).exclude(id=tablet.id)  # محصول فعلی را حذف کن
+                RAM=tablet.RAM,
+                InnerMemory=tablet.InnerMemory,
+                brand=tablet.brand
+            ).exclude(id=tablet.id)
 
             if not similar_tablets.exists():
                 return Response({"error": "No similar tablets found."}, status=404)
 
             serializer = TabletSerializer(similar_tablets, many=True)
-            return Response(serializer.data)
+            return Response({
+                'tablet': TabletSerializer(tablet).data,
+                'similar_products': serializer.data
+            })
 
         except Tablet.DoesNotExist:
             return Response({"error": "Tablet not found"}, status=404)
@@ -146,9 +168,6 @@ class AirPodViewSet(FilterByBrandMixin ,  viewsets.ModelViewSet):
         
 
 
-class ReviewViewSet(viewsets.ModelViewSet):
-    queryset = Review.objects.all()
-    serializer_class = ReviewSerializer
     
     
 class BrandViewSet(viewsets.ModelViewSet):
@@ -168,7 +187,6 @@ class AccessoryViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='by-type/(?P<type_id>[^/.]+)')
     def filter_by_type(self, request, type_id=None):
-        # فیلتر بر اساس ProductType
         filtered_accessories = self.queryset.filter(ProductType__id=type_id)
         serializer = self.get_serializer(filtered_accessories, many=True)
         return Response(serializer.data)

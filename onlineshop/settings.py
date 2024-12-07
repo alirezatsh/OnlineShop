@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'ckeditor_uploader',
     'accounts.apps.AccountsConfig',
     'forms.apps.FormsConfig',
+    'django_filters',
+
 
 ]
 

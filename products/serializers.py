@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import (Phone, PhoneImage , Review , Tablet , 
+from .models import (Phone, PhoneImage , Tablet , 
                      TabletImage , SmartWatchImage , SmartWatch 
                      , AirPods , AirPodImage , Brand , Accessory  , AccessoryType , AccessoryImage , Color )
 from django.db.models import Q
@@ -8,27 +8,16 @@ from django.db.models import Q
 class TurnIdIntoString(serializers.ModelSerializer):
     brand = serializers.PrimaryKeyRelatedField(queryset=Brand.objects.all())
     color = serializers.PrimaryKeyRelatedField(queryset=Color.objects.all())
-    review = serializers.PrimaryKeyRelatedField(queryset=Review.objects.all())
     
     
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['brand'] = instance.brand.name if instance.brand else None
         representation['color'] = instance.color.name if instance.color else None
-        if instance.review:
-            representation['review'] = {
-                'title': instance.review.title,
-                'description': instance.review.description
-            }
-        else:
-            representation['review'] = None
+        
         return representation
 
 
-class ReviewSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Review
-        fields = '__all__'
 
 
 class PhoneImageSerializer(serializers.ModelSerializer):
@@ -50,7 +39,7 @@ class SimilarPhoneSerializer(serializers.ModelSerializer):
         return first_image.image.url if first_image else None
 
 
-class PhoneSerializer(serializers.ModelSerializer):
+class PhoneSerializer(TurnIdIntoString):
     images = PhoneImageSerializer(many=True, read_only=True)
     uploaded_images = serializers.ListField(
         child=serializers.ImageField(max_length=1000000, allow_empty_file=False, use_url=False),
@@ -60,6 +49,8 @@ class PhoneSerializer(serializers.ModelSerializer):
     comparison = serializers.PrimaryKeyRelatedField(
         queryset=Phone.objects.all(),
         allow_null=True
+        ,required=False
+
     )
 
     class Meta:
@@ -94,15 +85,29 @@ class PhoneSerializer(serializers.ModelSerializer):
 
     def get_similar_phones(self, obj):
         similar_phones = Phone.objects.filter(
-            Q(name__icontains=obj.name.split()[0])
-        ).exclude(id=obj.id)[:5]
+            RAM=obj.RAM,
+            InnerMemory=obj.InnerMemory,
+            brand=obj.brand,
+            price__gte=obj.price - 1000000,
+            price__lte=obj.price + 1000000
+        ).exclude(id=obj.id)[:5]  
+
         return SimilarPhoneSerializer(similar_phones, many=True).data
+
+    def get_final_price(self, obj):
+        if obj.discount and obj.discount > 0:
+            return obj.price - obj.discount
+        return obj.price  
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
+        similar_phones_data = self.get_similar_phones(instance)
+        representation['similar_phones'] = similar_phones_data
+        
         if instance.comparison:
             comparison_data = PhoneSerializer(instance.comparison).data
             representation['comparison'] = comparison_data
+        
         return representation
  
 
@@ -127,16 +132,17 @@ class SimilarTabletSerializer(serializers.ModelSerializer):
         return first_image.image.url if first_image else None
 
 
-class TabletSerializer(TurnIdIntoString):
+class TabletSerializer(serializers.ModelSerializer):
     images = TabletImageSerializer(many=True, read_only=True)
     uploaded_images = serializers.ListField(
         child=serializers.ImageField(max_length=1000000, allow_empty_file=False, use_url=False),
         write_only=True
     )
-    similar_tablets = serializers.SerializerMethodField()
+    similar_tablets = serializers.SerializerMethodField() 
     comparison = serializers.PrimaryKeyRelatedField(
         queryset=Tablet.objects.all(),
         allow_null=True
+        ,required=False
     )
 
     class Meta:
@@ -159,7 +165,7 @@ class TabletSerializer(TurnIdIntoString):
 
     def update(self, instance, validated_data):
         uploaded_images = validated_data.pop('uploaded_images', [])
-        
+
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
@@ -170,30 +176,32 @@ class TabletSerializer(TurnIdIntoString):
         return instance
 
     def get_similar_tablets(self, obj):
-        # پیدا کردن محصولات مشابه
         similar_tablets = Tablet.objects.filter(
             RAM=obj.RAM,
             InnerMemory=obj.InnerMemory,
             brand=obj.brand,
             price__gte=obj.price - 1000000,
             price__lte=obj.price + 1000000
-        ).exclude(id=obj.id)[:5] 
+        ).exclude(id=obj.id)[:5]  
 
-        return TabletSerializer(similar_tablets, many=True).data
+        return SimilarTabletSerializer(similar_tablets, many=True).data
 
     def get_final_price(self, obj):
         if obj.discount and obj.discount > 0:
             return obj.price - obj.discount
         return obj.price  
-    
-    
+
     def to_representation(self, instance):
         representation = super().to_representation(instance)
+        
+        similar_tablets_data = self.get_similar_tablets(instance)
+        representation['similar_tablets'] = similar_tablets_data
+        
         if instance.comparison:
             comparison_data = TabletSerializer(instance.comparison).data
             representation['comparison'] = comparison_data
+        
         return representation
-
 
 
 class SmartWatchImageSerializer(serializers.ModelSerializer):
@@ -225,6 +233,8 @@ class SmartWatchSerializer(TurnIdIntoString):
     comparison = serializers.PrimaryKeyRelatedField(
         queryset=SmartWatch.objects.all(),
         allow_null=True
+        ,required=False
+
     )
 
     class Meta:
@@ -259,15 +269,29 @@ class SmartWatchSerializer(TurnIdIntoString):
 
     def get_similar_smartwatch(self, obj):
         similar_smartwatch = SmartWatch.objects.filter(
-            Q(name__icontains=obj.name.split()[0])
-        ).exclude(id=obj.id)[:5]
+            RAM=obj.RAM,
+            InnerMemory=obj.InnerMemory,
+            brand=obj.brand,
+            price__gte=obj.price - 1000000,
+            price__lte=obj.price + 1000000
+        ).exclude(id=obj.id)[:5]  
+
         return SimilarSmartWatchSerializer(similar_smartwatch, many=True).data
-    
+
+    def get_final_price(self, obj):
+        if obj.discount and obj.discount > 0:
+            return obj.price - obj.discount
+        return obj.price  
+
     def to_representation(self, instance):
         representation = super().to_representation(instance)
+        similar_smartwatch_data = self.get_similar_smartwatch(instance)
+        representation['similar_smartwatch'] = similar_smartwatch_data
+        
         if instance.comparison:
             comparison_data = SmartWatchSerializer(instance.comparison).data
             representation['comparison'] = comparison_data
+        
         return representation
 
 
@@ -300,6 +324,8 @@ class AirPodSerializer(TurnIdIntoString):
     comparison = serializers.PrimaryKeyRelatedField(
         queryset=AirPods.objects.all(),
         allow_null=True
+        ,required=False
+
     )
 
     class Meta:
@@ -390,6 +416,8 @@ class AccessorySerializer(TurnIdIntoString):
     comparison = serializers.PrimaryKeyRelatedField(
         queryset=Accessory.objects.all(),
         allow_null=True
+        ,required=False
+
     )
 
     class Meta:
@@ -435,7 +463,7 @@ class AccessorySerializer(TurnIdIntoString):
         product_type = instance.ProductType.name.lower() if instance.ProductType else ''
         
         if product_type == 'powerbonk':
-            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison'
+            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' ,
                               'brand' , 'capacity' , 'compatibility' , 'InputPort' , 'NumberOfOutputPorts' , 
                               'TotalOutputPower', 'DimensionsWeights' , 'BodyMaterial' , 'LEDIndicator' , 
                               'FastCharging' , 'WirelessCharging' , 'TechnicalSpecifications' , 'IncludedItems' ,
@@ -444,7 +472,7 @@ class AccessorySerializer(TurnIdIntoString):
                               'OtherFeatures' , 'battery' , 'capacityInWH' , 'NominalCapacity' , 'ProductID' ]
             
         elif product_type == 'headphone':
-            allowed_fields = ['id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand'
+            allowed_fields = ['id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand',
                               'bluetooth' , 'NFC' , 'CableLength' , 'MultipleConnection' , 'microphone' ,
                               'InterfaceType' , 'jack' , 'ResponseFrequency' , 'Impedance' , 'DriverDiameter' , 
                               'VoiceControl' , 'ANC' , 'sensitivity' , 'USBPort' , 'buttons' , 'type' , 'VoiceAssistant' ,
@@ -453,7 +481,7 @@ class AccessorySerializer(TurnIdIntoString):
                               ]
             
         elif product_type == 'speaker':
-            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand'
+            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand' ,
                               'screen' , 'RemoteControl' , 'AUXGate' , 'ConnectOtherSpeakers' , 'BatteryEfficiency' ,
                               'ChargingTime' , 'MemoryCardSupport' , 'SideMicrophone' , 'DanceOfLight' , 'NumberOfSubWoofers' ,
                               'SubWooferDimensions' , 'MicrophoneInput' , 'HeadphoneOutput' , 'PerformanceRange' , 'ConversationMicrophone'
@@ -463,52 +491,52 @@ class AccessorySerializer(TurnIdIntoString):
                               ]
             
         elif product_type == 'keyboard':
-            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand'
+            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand' ,
                               'ConnectionType' , 'NumberOfKeys' , 'CompatibleOs' , 'NumberOfKeystrokes' , 'lighting' , 'TypeOfKeyboard' , 'WristSupport' , 'TypeOfSwitch' , 
                               'ColorOfSwitch' , 'AntiGhosting' , 'NumberOfBatteries' , 'KeyboardBoard' , 'DimensionsWeights' ,
                               'PowerSource' , 'ProductID' , 'OtherFeatures' , 
                               ]
             
         elif product_type == 'flash':
-            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand'
+            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand' , 
                               'TransferSpeed' , 'InterfaceTechnology' , 'StandardSpeed' , 'DimensionsWeights' , 
                               'resistance' , 'capacity' , 'ProductID' , 'OtherFeatures' , 'PowerSource' , 
                               ]
             
         elif product_type == 'aux':
-            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand'
+            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand' , 
                               'CableLength' , 'CableMaterial' , 'TypeOfCable' , 'CommunicationPorts' ,
                               'NumberOfOutputGate' , 'SuitableFor' , 'OtherFeatures' , ''
                               ]
             
         elif product_type == 'memorycard':
-            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand'
+            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand' , 
                               'ReadingSpeed' , 'temperature' , 'WritingSpeed' , 'capacity' , 'DimensionsWeights' , 'resistance' , 'ProductID' , ''
                               ]
             
         elif product_type == 'charger':
-            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand'
+            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand' , 
                               'IncludeCable' , 'ChargingPower' , 'NumberOfOutputPorts' , 'ChargingFeatures' , 'PartNumber' ,
                               'OutputVoltage' , 'SuitableFor' , 'InputVoltage' , 'ProductID' , 'OtherFeatures' , 'InputCurrentIntensity' , 'OutputCurrentIntensity'
                               ]
             
         elif product_type == 'chargingcable':
-            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand'
+            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand' , 
                               'InterfaceType' , 'CableLength' , 'SuitableFor' , 'OtherFeatures' , 'compatibility' , 'FastCharging' , 'CableMaterial'
                               ]
             
         elif product_type == 'phonecase':
-            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand'
+            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand' , 
                               'material' , 'structure' , 'CoverLevel' , 'SuitableFor' , 'SpecialFeatures' , '' , '' , ''
                               ]
             
         elif product_type == 'watchband':
-            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand'
+            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand' , 
                               'LockType' , 'size' , 'SuitableFor' , 'BodyMaterial' , 'OtherFeatures' , 
                               ]
             
         elif product_type == 'watchcover':
-            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand'
+            allowed_fields = [ 'id' , 'name', 'color', 'ProductType' , 'price' , 'discount' , 'FinalPrice' , 'review' ,'uploaded_images' , 'images' , 'comparison' , 'brand' , 
                               'SuitableFor' , 'OtherFeatures' 
                               ]
             

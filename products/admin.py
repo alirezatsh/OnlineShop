@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import (Phone, PhoneImage , Review , Tablet , 
+from .models import (Phone, PhoneImage  , Tablet , 
                      TabletImage , SmartWatch , SmartWatchImage
                      , AirPods , AirPodImage , Brand , Accessory , AccessoryType , Color)
 
@@ -39,7 +39,6 @@ admin.site.register(SmartWatch, SmartWatchAdmin)
 admin.site.register(SmartWatchImage)
 admin.site.register(AirPods , AirPodAdmin)
 admin.site.register(AirPodImage)
-admin.site.register(Review)
 admin.site.register(Brand)
 admin.site.register(Color)
 admin.site.register(AccessoryType)
