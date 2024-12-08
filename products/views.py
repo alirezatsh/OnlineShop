@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework import viewsets, permissions, mixins
 from rest_framework.response import Response
-from rest_framework.filters import SearchFilter
+from rest_framework.filters import OrderingFilter
 from rest_framework.viewsets import ModelViewSet
 from .models import (Phone, PhoneImage , Tablet , TabletImage ,
                      SmartWatch , SmartWatchImage , AirPods , AirPodImage
@@ -62,9 +62,6 @@ class ProductSearchViewSet(viewsets.ViewSet):
 
 
 
-
-
-
 class FilterByBrandMixin:
     @action(detail=False, methods=['get'], url_path='brand/(?P<brand_id>\d+)')
     def by_brand(self, request, brand_id=None):
@@ -74,11 +71,17 @@ class FilterByBrandMixin:
             return Response(serializer.data)
         except:
             return Response({"error": "Brand not found"}, status=404)
+        
+        
+class ProductFilter(FilterByBrandMixin , viewsets.ModelViewSet):
+    filter_backends = [OrderingFilter]
+    ordering_fields = ['price', 'discount', 'id'] 
 
 
-class PhoneViewSet(FilterByBrandMixin , ProductSearchViewSet):
+class PhoneViewSet(ProductFilter):
     queryset = Phone.objects.select_related('brand', 'color')
     serializer_class = PhoneSerializer
+    
     
 
     @action(detail=True, methods=['get'])
@@ -101,7 +104,7 @@ class PhoneImageViewSet(viewsets.ModelViewSet):
     serializer_class = PhoneImageSerializer
 
 
-class TabletViewSet(viewsets.ModelViewSet):
+class TabletViewSet(ProductFilter):
     queryset = Tablet.objects.all()
     serializer_class = TabletSerializer
 
@@ -133,7 +136,7 @@ class TabletImageViewSet(viewsets.ModelViewSet):
     serializer_class = TabletImageSerializer
     
     
-class SmartwatchViewSet(FilterByBrandMixin , viewsets.ModelViewSet):
+class SmartwatchViewSet(ProductFilter):
     queryset = SmartWatch.objects.all()
     serializer_class = SmartWatchSerializer
 
@@ -163,7 +166,7 @@ class SmartwatchViewSet(FilterByBrandMixin , viewsets.ModelViewSet):
         
 
 
-class AirPodViewSet(FilterByBrandMixin ,  viewsets.ModelViewSet):
+class AirPodViewSet(ProductFilter):
     queryset = AirPods.objects.all()
     serializer_class = AirPodSerializer
     
@@ -206,7 +209,7 @@ class ColorViewSet(viewsets.ModelViewSet):
 
 
 
-class AccessoryViewSet(viewsets.ModelViewSet):
+class AccessoryViewSet(ProductFilter):
     queryset = Accessory.objects.select_related('ProductType')
     serializer_class = AccessorySerializer
 
