@@ -16,7 +16,7 @@ router.register(r'brands' , BrandViewSet)
 router.register(r'accessories' , AccessoryViewSet , basename='accessory')
 router.register(r'colors' , ColorViewSet , basename='colors')
 router.register(r'accessorytype' , AccessoryTypeViewSet , basename='accessorytype')
-router.register(r'search', ProductSearchViewSet, basename='product-search')
+router.register(r'', ProductSearchViewSet, basename='product-search')
 
 
 
