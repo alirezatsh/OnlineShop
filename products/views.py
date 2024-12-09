@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework import viewsets, permissions, mixins
 from rest_framework.response import Response
-from rest_framework.filters import SearchFilter
+from rest_framework.filters import OrderingFilter
 from rest_framework.viewsets import ModelViewSet
 from .models import (Phone, PhoneImage , Tablet , TabletImage ,
                      SmartWatch , SmartWatchImage , AirPods , AirPodImage
@@ -18,26 +18,48 @@ from .serializers import (PhoneSerializer, PhoneImageSerializer,
 from django.db.models import Q
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework import status
 
 
-
-
-
-class ProductSearchViewSet(viewsets.GenericViewSet):
-    serializer_class = None  
-    filter_backends = [SearchFilter]
-    search_fields = ['name']  
-
-    def get_queryset(self):
+class ProductSearchViewSet(viewsets.ViewSet):
+    def list(self, request):
         search_query = self.request.query_params.get('search', None)
-        if search_query:
-            mobiles = Phone.objects.filter(name__icontains=search_query)
-            tablets = Tablet.objects.filter(name__icontains=search_query)
-            watches = SmartWatch.objects.filter(name__icontains=search_query)
-            airpods = AirPods.objects.filter(name__icontains=search_query)
-            return mobiles | tablets | watches | airpods
-        return Phone.objects.none()  
+
+        if not search_query:
+            return Response({"message": "No search query provided."}, status=400)
+
+        phones = Phone.objects.filter(
+            Q(name__icontains=search_query) | Q(brand__name__icontains=search_query)
+        )
+        tablets = Tablet.objects.filter(
+            Q(name__icontains=search_query) | Q(brand__name__icontains=search_query)
+        )
+        smartwatches = SmartWatch.objects.filter(
+            Q(name__icontains=search_query) | Q(brand__name__icontains=search_query)
+        )
+        airpods = AirPods.objects.filter(
+            Q(name__icontains=search_query) | Q(brand__name__icontains=search_query)
+        )
+        accessories = Accessory.objects.filter(
+            Q(name__icontains=search_query) | Q(brand__name__icontains=search_query)
+        )
+
+        all_products = []
+        for product in phones:
+            all_products.append(PhoneSerializer(product).data)
+        for product in tablets:
+            all_products.append(TabletSerializer(product).data)
+        for product in smartwatches:
+            all_products.append(SmartWatchSerializer(product).data)
+        for product in airpods:
+            all_products.append(AirPodSerializer(product).data)
+        for product in accessories:
+            all_products.append(AccessorySerializer(product).data)
+
+        if not all_products:
+            return Response({"message": "No products found."}, status=404)
+
+        return Response(all_products)
+
 
 
 class FilterByBrandMixin:
@@ -49,11 +71,17 @@ class FilterByBrandMixin:
             return Response(serializer.data)
         except:
             return Response({"error": "Brand not found"}, status=404)
+        
+        
+class ProductFilter(FilterByBrandMixin , viewsets.ModelViewSet):
+    filter_backends = [OrderingFilter]
+    ordering_fields = ['price', 'discount', 'id'] 
 
 
-class PhoneViewSet(FilterByBrandMixin , viewsets.ModelViewSet):
+class PhoneViewSet(ProductFilter):
     queryset = Phone.objects.select_related('brand', 'color')
     serializer_class = PhoneSerializer
+    
     
 
     @action(detail=True, methods=['get'])
@@ -76,7 +104,7 @@ class PhoneImageViewSet(viewsets.ModelViewSet):
     serializer_class = PhoneImageSerializer
 
 
-class TabletViewSet(viewsets.ModelViewSet):
+class TabletViewSet(ProductFilter):
     queryset = Tablet.objects.all()
     serializer_class = TabletSerializer
 
@@ -108,7 +136,7 @@ class TabletImageViewSet(viewsets.ModelViewSet):
     serializer_class = TabletImageSerializer
     
     
-class SmartwatchViewSet(FilterByBrandMixin , viewsets.ModelViewSet):
+class SmartwatchViewSet(ProductFilter):
     queryset = SmartWatch.objects.all()
     serializer_class = SmartWatchSerializer
 
@@ -138,7 +166,7 @@ class SmartwatchViewSet(FilterByBrandMixin , viewsets.ModelViewSet):
         
 
 
-class AirPodViewSet(FilterByBrandMixin ,  viewsets.ModelViewSet):
+class AirPodViewSet(ProductFilter):
     queryset = AirPods.objects.all()
     serializer_class = AirPodSerializer
     
@@ -181,7 +209,7 @@ class ColorViewSet(viewsets.ModelViewSet):
 
 
 
-class AccessoryViewSet(viewsets.ModelViewSet):
+class AccessoryViewSet(ProductFilter):
     queryset = Accessory.objects.select_related('ProductType')
     serializer_class = AccessorySerializer
 
