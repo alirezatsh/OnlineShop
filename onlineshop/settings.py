@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'django_filters',
 
 
+
 ]
 
 MIDDLEWARE = [
@@ -60,6 +61,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'onlineshop.custom_middleware.admin_only_middleware'
 ]
 
 ROOT_URLCONF = 'onlineshop.urls'
