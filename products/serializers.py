@@ -361,15 +361,30 @@ class AirPodSerializer(TurnIdIntoString):
 
     def get_similar_airpods(self, obj):
         similar_airpods = AirPods.objects.filter(
-            Q(name__icontains=obj.name.split()[0])
-        ).exclude(id=obj.id)[:5]
+            ANC=obj.ANC,
+            bluetooth__icontains=obj.bluetooth.split()[0],
+            brand=obj.brand,
+            price__gte=obj.price - 1000000,
+            price__lte=obj.price + 1000000,
+
+        ).exclude(id=obj.id)[:5]  
+
         return SimilarAirPodSerializer(similar_airpods, many=True).data
-    
+
+    def get_final_price(self, obj):
+        if obj.discount and obj.discount > 0:
+            return obj.price - obj.discount
+        return obj.price  
+
     def to_representation(self, instance):
         representation = super().to_representation(instance)
+        similar_airpods_data = self.get_similar_airpods(instance)
+        representation['similar_airpods'] = similar_airpods_data
+        
         if instance.comparison:
             comparison_data = AirPodSerializer(instance.comparison).data
             representation['comparison'] = comparison_data
+        
         return representation
 
 

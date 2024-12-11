@@ -3,7 +3,6 @@ from rest_framework.decorators import action
 from rest_framework import viewsets, permissions, mixins
 from rest_framework.response import Response
 from rest_framework.filters import OrderingFilter
-from rest_framework.viewsets import ModelViewSet
 from .models import (Phone, PhoneImage , Tablet , TabletImage ,
                      SmartWatch , SmartWatchImage , AirPods , AirPodImage
                      , Brand , Accessory  , AccessoryType , AccessoryImage , Color)
@@ -81,22 +80,6 @@ class ProductFilter(FilterByBrandMixin , viewsets.ModelViewSet):
 class PhoneViewSet(ProductFilter):
     queryset = Phone.objects.select_related('brand', 'color')
     serializer_class = PhoneSerializer
-    
-    
-
-    @action(detail=True, methods=['get'])
-    def similar(self, request, pk=None):
-        try:
-            phone = self.get_object()
-            similar_phones = Phone.objects.filter(
-                Q(name__icontains=phone.name.split()[0])
-            ).exclude(id=phone.id)[:5]
-
-            serializer = SimilarPhoneSerializer(similar_phones, many=True)
-            return Response(serializer.data)
-        except Phone.DoesNotExist:
-            return Response({"error": "Phone not found"}, status=404)
-
 
 
 class PhoneImageViewSet(viewsets.ModelViewSet):
@@ -108,28 +91,6 @@ class TabletViewSet(ProductFilter):
     queryset = Tablet.objects.all()
     serializer_class = TabletSerializer
 
-    @action(detail=True, methods=['get'])
-    def similar(self, request, pk=None):
-        try:
-            tablet = self.get_object()
-
-            similar_tablets = Tablet.objects.filter(
-                RAM=tablet.RAM,
-                InnerMemory=tablet.InnerMemory,
-                brand=tablet.brand
-            ).exclude(id=tablet.id)
-
-            if not similar_tablets.exists():
-                return Response({"error": "No similar tablets found."}, status=404)
-
-            serializer = TabletSerializer(similar_tablets, many=True)
-            return Response({
-                'tablet': TabletSerializer(tablet).data,
-                'similar_products': serializer.data
-            })
-
-        except Tablet.DoesNotExist:
-            return Response({"error": "Tablet not found"}, status=404)
 
 class TabletImageViewSet(viewsets.ModelViewSet):
     queryset = TabletImage.objects.all()
