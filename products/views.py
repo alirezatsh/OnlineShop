@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.filters import OrderingFilter
 from .models import (Phone, PhoneImage , Tablet , TabletImage ,
                      SmartWatch , SmartWatchImage , AirPods , AirPodImage
-                     , Brand , Accessory  , AccessoryType , AccessoryImage , Color)
+                     , Brand , Accessory  , AccessoryType , AccessoryImage , Color) 
 
 from .serializers import (PhoneSerializer, PhoneImageSerializer, 
                           SimilarPhoneSerializer , TabletImageSerializer ,

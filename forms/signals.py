@@ -41,3 +41,6 @@ def notify_installment(sender, instance, created, **kwargs):
             [settings.EMAIL_HOST_USER],  
             fail_silently=False,
         )
+
+
+
