@@ -12,16 +12,6 @@ Welcome to **Online Shop**, the ultimate online store for mobile phones and acce
 - **Class-Based Views**: Clean, reusable, and maintainable code using class-based views.
 - **Similar Products**: Display products similar to the one you're currently viewing.
 
-## Getting Started
 
-1. **Create and activate a virtual environment**:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # For Linux
-   venv\Scripts\activate     # For Windows
-   cd onlineshop
-   pip install -r requirements.txt
-   python manage.py migrate
-   python manage.py runserver
 
 
